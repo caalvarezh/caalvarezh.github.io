@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caída Libre Pro (Accesible) - Digital Lab</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+</head>
+
+<body class="sim-body">
+
+    <header>
+        <div style="flex: 1;">
+            <h1 class="sim-h1">Simulador Caída Libre</h1>
+        </div>
+
+        <div class="nav-container">
+            <div class="nav-pill">
+                <a href="index.html" class="btn-nav">
+                    <span>🏠</span> Volver al inicio
+                </a>
+            </div>
+        </div>
+
+        <div style="flex: 1; display: flex; justify-content: flex-end;">
+            <div id="clock" style="font-family: monospace; font-weight: bold; font-size: 1.2rem;">0.00 s</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="panel">
+            <div class="control-group">
+                <label>Gravedad (g)</label>
+                <div class="selection-grid" id="planet-presets">
+                    <div class="item-card active" data-g="9.81">🌍 Tierra</div>
+                    <div class="item-card" data-g="1.62">🌑 Luna</div>
+                    <div class="item-card" data-g="3.71">🔴 Marte</div>
+                    <div class="item-card" data-g="274">☀️ Sol</div>
+                    <div class="item-card" data-g="24.79">🟠 Júpiter</div>
+                    <div class="item-card" data-g="0">✨ Vacío</div>
+                </div>
+                <input type="number" id="gInput" value="9.81" step="0.01">
+            </div>
+
+            <div class="control-group">
+                <label>Altura Inicial (h₀)</label>
+                <input type="range" id="hRange" min="10" max="500" value="100">
+                <input type="number" id="hInput" value="100">
+            </div>
+
+            <div class="control-group">
+                <label>Objeto / Masa (kg)</label>
+                <div class="selection-grid" id="object-presets">
+                    <div class="item-card active" data-m="5.0" data-img="🌑">🌑 Metal</div>
+                    <div class="item-card" data-m="0.005" data-img="🪶">🪶 Pluma</div>
+                    <div class="item-card" data-m="0.6" data-img="🏀">🏀 Balón</div>
+                </div>
+                <input type="number" id="mInput" value="5.0" step="0.1">
+            </div>
+
+            <button class="btn btn-start" id="launchBtn">SOLTAR ▶</button>
+            <button class="btn" id="resetBtn" style="background: #ccc;">RESETEAR</button>
+        </aside>
+
+        <main id="simulation-container">
+            <div id="simulation-area">
+                <div id="object">🌑</div>
+                <div id="y-axis"></div>
+            </div>
+        </main>
+
+        <aside class="panel">
+            <label>Modelo Matemático</label>
+            <div class="equation">
+                $h(t) = h_0 - \frac{1}{2} g t^2$ <br>
+                $v(t) = g t$
+            </div>
+
+            <label>Energía Mecánica</label>
+            <div class="energy-box">
+                <small>Cinética ($K$): <b id="val-k">0</b> <span class="unit">J</span></small>
+                <div class="bar-bg">
+                    <div id="bar-k" class="bar-fill" style="background: var(--k-color);"></div>
+                </div>
+                <br>
+                <small>Potencial ($U$): <b id="val-u">0</b> <span class="unit">J</span></small>
+                <div class="bar-bg">
+                    <div id="bar-u" class="bar-fill" style="background: var(--u-color);"></div>
+                </div>
+            </div>
+
+            <label>Métricas en tiempo real</label>
+            <div class="metrics-box">
+                Altura Actual: <b id="res-h">100.00</b> <span class="unit">m</span><br>
+                Velocidad: <b id="res-v">0.00</b> <span class="unit">m/s</span><br>
+                Impacto: <b id="res-vi">---</b>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // --- MOTOR DE AUDIO (Accesibilidad) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let fallOscillator = null;
+        let fallGain = null;
+
+        function playUIFeedback(freq = 440, type = 'sine', duration = 0.1) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function initFallSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            fallOscillator = audioCtx.createOscillator();
+            fallGain = audioCtx.createGain();
+            fallOscillator.type = 'triangle';
+            fallGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            fallOscillator.connect(fallGain);
+            fallGain.connect(audioCtx.destination);
+            fallOscillator.start();
+        }
+
+        function updateFallSound(velocity) {
+            if (!fallOscillator) return;
+            // El tono sube proporcionalmente a la velocidad (Base 150Hz + V * 10)
+            const frequency = 150 + (velocity * 10);
+            fallOscillator.frequency.setTargetAtTime(frequency, audioCtx.currentTime, 0.05);
+            fallGain.gain.setTargetAtTime(0.1, audioCtx.currentTime, 0.05);
+        }
+
+        function stopFallSound() {
+            if (fallGain) fallGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+            setTimeout(() => {
+                if (fallOscillator) {
+                    fallOscillator.stop();
+                    fallOscillator.disconnect();
+                    fallOscillator = null;
+                }
+            }, 100);
+        }
+
+        // --- LÓGICA DEL SIMULADOR ---
+        const obj = document.getElementById('object');
+        const area = document.getElementById('simulation-area');
+        const launchBtn = document.getElementById('launchBtn');
+        const clock = document.getElementById('clock');
+
+        let isRunning = false, t = 0, timer = null;
+        let g = 9.81, h0 = 100, m = 5.0, scale = 1;
+
+        function drawAxis() {
+            const axis = document.getElementById('y-axis');
+            axis.innerHTML = '';
+            h0 = parseFloat(document.getElementById('hInput').value);
+            const effectiveHeight = area.offsetHeight - 40;
+            scale = effectiveHeight / h0;
+            const step = h0 > 100 ? 50 : 10;
+            for (let i = 0; i <= h0; i += step) {
+                const tick = document.createElement('div');
+                tick.className = 'tick';
+                tick.style.bottom = (i * scale) + "px";
+                tick.innerText = i + "m";
+                axis.appendChild(tick);
+            }
+        }
+
+        function launch() {
+            if (isRunning) reset();
+            playUIFeedback(660, 'sine', 0.15); // Sonido de lanzamiento
+            initFallSound();
+            isRunning = true;
+            t = 0;
+            g = parseFloat(document.getElementById('gInput').value);
+            h0 = parseFloat(document.getElementById('hInput').value);
+            m = parseFloat(document.getElementById('mInput').value);
+            const eTotal = m * g * h0;
+
+            timer = setInterval(() => {
+                t += 0.02;
+                let h = h0 - (0.5 * g * t * t);
+                let v = g * t;
+
+                if (h <= 0) {
+                    h = 0;
+                    v = g * Math.sqrt((2 * h0) / g);
+                    document.getElementById('res-vi').innerText = v.toFixed(2) + " m/s";
+                    playUIFeedback(150, 'square', 0.2); // Sonido de impacto (más grave)
+                    stop();
+                }
+
+                obj.style.bottom = (h * scale) + "px";
+                clock.innerText = t.toFixed(2) + " s";
+                document.getElementById('res-h').innerText = h.toFixed(2);
+                document.getElementById('res-v').innerText = v.toFixed(2);
+
+                updateFallSound(v);
+
+                const k = 0.5 * m * v * v;
+                const u = Math.max(0, m * g * h);
+                document.getElementById('val-k').innerText = Math.round(k);
+                document.getElementById('val-u').innerText = Math.round(u);
+                document.getElementById('bar-k').style.width = (eTotal > 0 ? (k / eTotal * 100) : 0) + "%";
+                document.getElementById('bar-u').style.width = (eTotal > 0 ? (u / eTotal * 100) : 0) + "%";
+            }, 20);
+        }
+
+        function stop() {
+            clearInterval(timer);
+            isRunning = false;
+            stopFallSound();
+        }
+
+        function reset() {
+            playUIFeedback(330, 'sine', 0.1); // Sonido de reset
+            stop();
+            t = 0;
+            clock.innerText = "0.00 s";
+            document.getElementById('res-vi').innerText = "---";
+            drawAxis();
+            obj.style.bottom = (h0 * scale) + "px";
+            document.getElementById('val-k').innerText = "0";
+            document.getElementById('bar-k').style.width = "0%";
+            document.getElementById('val-u').innerText = Math.round(m * g * h0);
+            document.getElementById('bar-u').style.width = "100%";
+        }
+
+        const sync = (r, i) => {
+            r.oninput = () => { i.value = r.value; reset(); };
+            i.oninput = () => { r.value = i.value; reset(); };
+        };
+        sync(document.getElementById('hRange'), document.getElementById('hInput'));
+
+        document.querySelectorAll('.item-card, .btn, .btn-nav').forEach(btn => {
+            btn.addEventListener('click', () => playUIFeedback(523, 'sine', 0.05));
+        });
+
+        document.querySelectorAll('#planet-presets .item-card').forEach(card => {
+            card.onclick = () => {
+                document.querySelectorAll('#planet-presets .item-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                document.getElementById('gInput').value = card.dataset.g;
+                reset();
+            };
+        });
+
+        document.querySelectorAll('#object-presets .item-card').forEach(card => {
+            card.onclick = () => {
+                document.querySelectorAll('#object-presets .item-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                document.getElementById('mInput').value = card.dataset.m;
+                obj.innerText = card.dataset.img;
+                reset();
+            };
+        });
+
+        launchBtn.onclick = launch;
+        document.getElementById('resetBtn').onclick = reset;
+        window.onload = reset;
+        window.onresize = reset;
+    </script>
+</body>
+
+</html>

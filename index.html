@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Simulaciones</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="index-body">
+
+    <header class="index-header">
+        <h1 class="index-h1">Listado de Simulaciones de Física</h1>
+        <p>A. Álvarez</p>
+    </header>
+
+
+    <div class="menu-container">
+        <a href="01_caidaLibre.html" class="sim-card">
+            <div class="icon-circle">🍎</div>
+            <h2>Caída Libre</h2>
+            <p>Explora cómo la gravedad afecta a los objetos en diferentes planetas sin resistencia del aire.</p>
+        </a>
+
+        <a href="02_movimientoProyectil.html" class="sim-card">
+            <div class="icon-circle">🚀</div>
+            <h2>Movimiento Parabólico</h2>
+            <p>Calcula trayectorias, alcances y alturas máximas ajustando ángulos, velocidad inicial y masa.</p>
+        </a>
+
+        <a href="03_leyHooke.html" class="sim-card">
+            <div class="icon-circle">〰️</div>
+            <h2>Ley de Hooke</h2>
+            <p>Simulación interactiva de la Ley de Hooke y Movimiento Armónico Simple.</p>
+        </a>
+    </div>
+
+    <div class="footer-text">Plataforma Educativa v1.0</div>
+
+    <script>
+        // --- MOTOR DE AUDIO (Accesibilidad y Feedback) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(freq, type, duration, vol) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+
+        // Asignar eventos a las tarjetas
+        document.querySelectorAll('.sim-card').forEach(card => {
+            // Sonido al pasar el cursor (Hover)
+            card.addEventListener('mouseenter', () => {
+                playSound(440, 'sine', 0.1, 0.05); // La natural suave
+            });
+
+            // Sonido al hacer clic
+            card.addEventListener('click', (e) => {
+                playSound(523.25, 'sine', 0.2, 0.1); // Do agudo de confirmación
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,17 @@
+{
+  "app_title": "Simulação: Lei de Hooke e MHS",
+  "lang_es": "Español",
+  "lang_en": "English",
+  "lang_pt": "Português",
+  "sim_title": "Área do Canvas de Simulação",
+  "controls_title": "Controles",
+  "mass": "Massa (m): {val} kg",
+  "spring": "Constante da Mola (k): {val} N/m",
+  "damping": "Amortecimento (b): {val} kg/s",
+  "btn_play": "▶︎ Iniciar",
+  "btn_pause": "⏸ Pausar",
+  "btn_reset": "↻ Reiniciar",
+  "toggle_vectors": "Mostrar Vetores (F, v, a)",
+  "modal_title": "Ajuda e Instruções",
+  "modal_body": "<p>Bem-vindo à simulação do Sistema Massa-Mola (Lei de Hooke).</p><ul><li><strong>Arrastar:</strong> Use o mouse ou o toque para esticar ou comprimir a mola arrastando a massa.</li><li><strong>Controles:</strong> Modifique a massa, a constante elástica e o amortecimento usando os controles deslizantes.</li><li><strong>Gráficos:</strong> Observe a evolução da posição, velocidade e energias.</li></ul><p>Esta simulação utiliza o método de Euler-Cromer.</p>"
+}

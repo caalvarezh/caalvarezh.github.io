@@ -1,0 +1,17 @@
+{
+  "app_title": "Simulation: Hooke's Law and SHM",
+  "lang_es": "Español",
+  "lang_en": "English",
+  "lang_pt": "Português",
+  "sim_title": "Simulation Canvas Area",
+  "controls_title": "Controls",
+  "mass": "Mass (m): {val} kg",
+  "spring": "Spring Constant (k): {val} N/m",
+  "damping": "Damping (b): {val} kg/s",
+  "btn_play": "▶︎ Play",
+  "btn_pause": "⏸ Pause",
+  "btn_reset": "↻ Reset",
+  "toggle_vectors": "Show Vectors (F, v, a)",
+  "modal_title": "Help and Instructions",
+  "modal_body": "<p>Welcome to the Mass-Spring System (Hooke's Law) simulation.</p><ul><li><strong>Drag:</strong> Use your mouse or touch to stretch or compress the spring by dragging the mass.</li><li><strong>Controls:</strong> Modify mass, spring constant, and damping using the sliders.</li><li><strong>Charts:</strong> Observe the evolution of position, velocity, and energies.</li></ul><p>This simulation uses the Euler-Cromer method.</p>"
+}

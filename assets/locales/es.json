@@ -1,0 +1,17 @@
+{
+  "app_title": "Simulación: Ley de Hooke y MAS",
+  "lang_es": "Español",
+  "lang_en": "English",
+  "lang_pt": "Português",
+  "sim_title": "Área del Canvas de Simulación",
+  "controls_title": "Controles",
+  "mass": "Masa (m): {val} kg",
+  "spring": "Constante del Resorte (k): {val} N/m",
+  "damping": "Amortiguamiento (b): {val} kg/s",
+  "btn_play": "▶︎ Iniciar",
+  "btn_pause": "⏸ Pausar",
+  "btn_reset": "↻ Reiniciar",
+  "toggle_vectors": "Mostrar Vectores (F, v, a)",
+  "modal_title": "Ayuda e Instrucciones",
+  "modal_body": "<p>Bienvenido a la simulación del Sistema Masa-Resorte (Ley de Hooke).</p><ul><li><strong>Arrastrar:</strong> Usa el ratón o tacto para estirar o comprimir el resorte arrastrando la masa.</li><li><strong>Controles:</strong> Modifica la masa, constante de elasticidad y el amortiguamiento usando los deslizadores.</li><li><strong>Gráficos:</strong> Observa la evolución de la posición, velocidad y energías.</li></ul><p>Esta simulación utiliza el método de Euler-Cromer.</p>"
+}

@@ -1,0 +1,8 @@
+@font-face {
+    font-family: KaTeX_AMS;
+    font-style: normal;
+    font-weight: 400;
+    src: url(fonts/KaTeX_AMS-Regular.woff2) format("woff2"), url(fonts/KaTeX_AMS-Regular.woff) format("woff"), url(fonts/KaTeX_AMS-Regular.ttf) format("truetype")
+}
+
+... (full content from read_url_content) ...

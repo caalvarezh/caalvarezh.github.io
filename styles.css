@@ -1,0 +1,431 @@
+:root {
+    --md-sys-color-primary: #75B8C8;
+    --md-sys-color-on-primary: #220C10;
+    --md-sys-color-primary-container: #77CBB9;
+    --md-sys-color-surface: #f4f7f8;
+    --md-sys-color-surface-variant: #CDD3D5;
+    --md-sys-color-outline: #506C64;
+    --md-sys-color-background: #eef2f3;
+    --md-sys-color-on-surface-variant: #506C64;
+    --k-color: #ff8a80;
+    --u-color: #ffd54f;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-primary);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Structural Layouts */
+.index-body {
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.sim-body {
+    height: 100vh;
+    overflow: hidden;
+}
+
+header {
+    background: var(--md-sys-color-surface);
+    border-bottom: 1px solid var(--md-sys-color-outline);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 0.8rem 2rem;
+}
+
+.index-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    display: block;
+}
+
+h1 {
+    font-family: 'Montserrat', sans-serif;
+    color: var(--md-sys-color-primary);
+    margin: 0;
+}
+
+.index-h1 {
+    font-size: 2.5rem;
+}
+
+.sim-h1 {
+    font-size: 1.2rem;
+}
+
+p {
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+/* Navbar / Navigation */
+.nav-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav-pill {
+    background: white;
+    padding: 0.3rem;
+    border-radius: 18px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--md-sys-color-outline);
+}
+
+.btn-nav {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 14px;
+    font-weight: 700;
+    font-family: 'Montserrat';
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.btn-nav:hover {
+    background: var(--md-sys-color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(117, 184, 200, 0.3);
+}
+
+/* Menu (index.html) */
+.menu-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    width: 90%;
+    max-width: 900px;
+}
+
+.sim-card {
+    background: var(--md-sys-color-surface);
+    border-radius: 32px;
+    padding: 2.5rem;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 2px solid transparent;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    transition: var(--transition);
+}
+
+.sim-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--md-sys-color-primary);
+    background: white;
+    box-shadow: 0 15px 35px rgba(117, 184, 200, 0.2);
+}
+
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    background: var(--md-sys-color-primary-container);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    transition: var(--transition);
+}
+
+.sim-card:hover .icon-circle {
+    transform: rotate(-10deg) scale(1.1);
+}
+
+.sim-card h2 {
+    font-family: 'Montserrat', sans-serif;
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    color: var(--md-sys-color-on-primary);
+}
+
+.sim-card p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.footer-text {
+    margin-top: 4rem;
+    font-size: 0.8rem;
+    opacity: 0.6;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Simulation Panels */
+.main-container {
+    display: grid;
+    grid-template-columns: 320px 1fr 320px;
+    gap: 1rem;
+    padding: 1rem;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.panel {
+    background: var(--md-sys-color-surface-variant);
+    border-radius: 24px;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+}
+
+#simulation-container {
+    position: relative;
+    flex-grow: 1;
+    background: white;
+    border-radius: 24px;
+    border: 2px solid var(--md-sys-color-primary);
+    overflow: hidden;
+}
+
+#simulation-area {
+    position: absolute;
+    top: 20px;
+    right: 40px;
+    bottom: 40px;
+    left: 70px;
+    background: linear-gradient(180deg, #75B8C8 0%, #CDD3D5 100%);
+    border-bottom: 2px solid var(--md-sys-color-outline);
+    border-left: 2px solid var(--md-sys-color-outline);
+    border-radius: 4px;
+}
+
+/* Projectile specific adjustment */
+.projectile-area {
+    right: 20px !important;
+    left: 50px !important;
+}
+
+.tick {
+    position: absolute;
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--md-sys-color-outline);
+}
+
+#y-axis .tick {
+    left: -45px;
+    width: 40px;
+    text-align: right;
+}
+
+#object {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    z-index: 10;
+}
+
+#projectile {
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    transform: translate(-50%, 50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.trace {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.4;
+}
+
+.axis-x {
+    position: absolute;
+    bottom: 10px;
+    left: 50px;
+    right: 20px;
+    height: 20px;
+    display: flex;
+}
+
+.axis-y {
+    position: absolute;
+    left: 10px;
+    top: 20px;
+    bottom: 40px;
+    width: 35px;
+}
+
+/* Controls */
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+input[type="range"] {
+    accent-color: var(--md-sys-color-primary);
+}
+
+input[type="number"] {
+    padding: 0.4rem;
+    border-radius: 8px;
+    border: 1px solid var(--md-sys-color-outline);
+    background: var(--md-sys-color-surface);
+}
+
+.selection-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+}
+
+.grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.item-card {
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 12px;
+    background: var(--md-sys-color-surface);
+    text-align: center;
+    font-size: 0.75rem;
+    border: 2px solid transparent;
+    transition: 0.2s;
+}
+
+.item-card.active {
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-primary-container);
+}
+
+.btn {
+    padding: 0.8rem;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: 'Montserrat';
+    transition: 0.2s;
+    width: 100%;
+}
+
+.btn-start {
+    background: var(--md-sys-color-primary);
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+/* Math & Metrics */
+.equation {
+    font-family: inherit;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    border-left: 4px solid var(--md-sys-color-primary);
+    overflow-x: auto;
+    margin: 0.5rem 0;
+}
+
+.math-inline {
+    font-family: inherit;
+}
+
+.unit {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    color: var(--md-sys-color-outline);
+    font-size: 0.9em;
+    margin-left: 2px;
+}
+
+.frac {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.frac span {
+    display: block;
+    padding: 0 2px;
+}
+
+.frac span.bottom {
+    border-top: 1px solid black;
+}
+
+.energy-box {
+    background: white;
+    padding: 0.8rem;
+    border-radius: 16px;
+    border: 1px solid var(--md-sys-color-outline);
+}
+
+.bar-bg {
+    background: #eee;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.bar-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+.metrics-box {
+    font-size: 0.85rem;
+    line-height: 1.8;
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+}
