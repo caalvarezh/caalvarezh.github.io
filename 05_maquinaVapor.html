@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>CicloSim Vapor v6.4 - Laboratorio UTP</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: var(--md-sys-color-primary);
+            --secondary: var(--md-sys-color-primary-container);
+            --accent: #e67e22;
+        }
+
+        #visual-container { background: white; border: 2px solid var(--md-sys-color-primary); border-radius: 24px; height: 350px; position: relative; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        input[type="range"] { width: 100%; }
+
+        .math-box { font-size: 1.1rem; background: #f8f9fa; padding: 15px; border-left: 5px solid var(--accent); margin-bottom: 15px; display: flex; justify-content: center; align-items: center; min-height: 50px; }
+        .chart-wrapper { height: 180px; margin-bottom: 10px; border: 1px solid #eee; border-radius: 6px; padding: 10px; background: #fff; }
+
+        /* Modal Profesional */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 90%; max-width: 1000px; max-height: 90vh; border-radius: 12px; overflow-y: auto; padding: 0; position: relative; border-top: 20px solid var(--accent); }
+        .modal-header { padding: 25px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; background: #fdfdfd; }
+        .modal-body { padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; line-height: 1.7; }
+        .help-card { background: #f9f9f9; border-radius: 10px; padding: 20px; border: 1px solid #eaeaea; }
+        .help-card h3 { margin-top: 0; font-size: 1.2rem; color: var(--primary); border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; margin-bottom: 15px; }
+
+    </style>
+</head>
+<body class="sim-body light-theme">
+
+<header>
+    <div style="flex: 1;">
+        <h1 class="sim-h1">CicloSim Vapor v6.4 - Laboratorio de Termodinámica UTP</h1>
+    </div>
+    <div class="nav-container">
+        <div class="nav-pill">
+            <a href="index.html" class="btn-nav">
+                <span>🏠</span> Volver al inicio
+            </a>
+        </div>
+    </div>
+    <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem;">
+        <button id="btn-help" class="btn btn-icon" aria-label="Ayuda" onclick="toggleModal(true)" style="background: transparent; border: none; cursor: pointer; color: var(--md-sys-color-primary);">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+        </button>
+    </div>
+</header>
+
+<div class="main-container">
+    <aside class="panel">
+        <div class="control-group">
+            <label>Temperatura Fuente Caliente ($T_h$): <span id="txtTh">500</span> K</label>
+            <input type="range" id="rngTh" min="373" max="900" value="500" oninput="updateValues()">
+        </div>
+        <div class="control-group">
+            <label>Temperatura Fuente Fría ($T_c$): <span id="txtTc">300</span> K</label>
+            <input type="range" id="rngTc" min="273" max="370" value="300" oninput="updateValues()">
+        </div>
+        <div class="control-group">
+            <label>Carga Mecánica (Resistencia)</label>
+            <input type="range" id="rngLoad" min="5" max="100" value="30" oninput="updateValues()">
+        </div>
+        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+        <div id="stats" style="font-size: 0.85rem; line-height: 2;">
+            <div>Trabajo Neto Neto: <strong id="resW">0.0</strong> J</div>
+            <div>Eficiencia Teórica Carnot ($e_C$): <strong id="resEC">0</strong> %</div>
+        </div>
+    </aside>
+
+    <section class="panel">
+        <div id="visual-container"><canvas id="engineCanvas"></canvas></div>
+        <label style="margin-top:10px; font-size:0.75rem; color:#888;">Ecuación de la Eficiencia Máxima (Límite de Carnot)</label>
+        <div class="math-box" id="main-eq"></div>
+    </section>
+
+    <aside class="panel">
+        <label>Diagrama $P-V$ del Ciclo de Vapor Idealizado</label>
+        <div class="chart-wrapper"><canvas id="pvChart"></canvas></div>
+
+        <label>Análisis de Eficiencia vs $T_h$ [K]</label>
+        <div class="chart-wrapper"><canvas id="effChart"></canvas></div>
+    </aside>
+</div>
+
+<div id="helpModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 style="margin:0; color: var(--primary);">Manual del Laboratorio Cinemático</h2>
+            <span style="cursor:pointer; font-size:2rem; color:#999;" onclick="toggleModal(false)">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="help-section" style="grid-column: 1 / 3; background:#f0f7ff; border-color:#d0e0f0;">
+                <h3>1. Fenómeno Físico: Máquinas Térmicas (Cap. 22 Serway)</h3>
+                <p>Una máquina térmica es un dispositivo que funciona en un ciclo y no produce otro efecto que la absorción de energía de un depósito y la realización de una cantidad igual de trabajo. En esta simulación, el vapor de agua actúa como sustancia de trabajo, transportando energía de una caldera a un condensador para mover un pistón.</p>
+                <div style="text-align:center; padding:10px;">$$e_{térmica} = \frac{W}{Q_h} = 1 - \frac{|Q_c|}{Q_h}$$</div>
+            </div>
+
+            <div class="help-section">
+                <h3>2. Uso del Simulador y Relación Física</h3>
+                <p><strong>Ajuste Térmico:</strong> Varíe las temperaturas de los depósitos. Al aumentar $T_h$, incrementa la presión del vapor, resultando en un ciclo $P-V$ más ancho y mayor trabajo neto por ciclo. El volante de inercia girará más rápido para una carga dada.</p>
+                <p><strong>Ciclo de Masa:</strong> Observe las partículas. Se evaporan en la caldera (blancas rápidas), se expanden en el pistón y se condensan en el condensador (azules lentas) para reiniciar el ciclo cerrado.</p>
+            </div>
+
+            <div class="help-section">
+                <h3>3. Interpretación de Resultados Teóricos</h3>
+                <p><strong>Eficiencia de Carnot:</strong> Representa el límite superior de rendimiento impuesto por la Segunda Ley: $e_C = 1 - T_c/T_h$. Ninguna máquina real puede alcanzar este valor debido a las irreversibilidades.</p>
+                <p><strong>Ejes y Unidades:</strong> Los gráficos utilizan unidades SI y prácticas: Presión en **Pascal [atm]**, Volumen en **Litros [L]**, y Energía en **Joules [J]**, tal como lo requiere un informe de laboratorio serio.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('engineCanvas');
+    const ctx = canvas.getContext('2d');
+    let pvChart, effChart;
+    let angle = 0;
+    let particles = [];
+
+    let state = {
+        Th: 500, Tc: 300, load: 30,
+        eC: 0, W: 0, speed: 0,
+        cycleData: []
+    };
+
+    function refreshMath() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [{left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false}]
+            });
+        }
+    }
+
+    function toggleModal(show) {
+        document.getElementById('helpModal').style.display = show ? 'flex' : 'none';
+        if(show) setTimeout(refreshMath, 50);
+    }
+
+    function updateValues() {
+        state.Th = parseFloat(document.getElementById('rngTh').value);
+        state.Tc = parseFloat(document.getElementById('rngTc').value);
+        state.load = parseFloat(document.getElementById('rngLoad').value);
+
+        document.getElementById('txtTh').innerText = state.Th;
+        document.getElementById('txtTc').innerText = state.Tc;
+
+        // Cálculos Físicos
+        state.eC = 1 - (state.Tc / state.Th);
+        state.W = 1000 * state.eC; // Simplificación física para W
+        state.speed = (state.W / state.load) * 0.8;
+
+        document.getElementById('resEC').innerText = (state.eC * 100).toFixed(1);
+        document.getElementById('resW').innerText = state.W.toFixed(0);
+
+        document.getElementById('main-eq').innerHTML = `$$e_{Carnot} = 1 - \\frac{T_c}{T_h} = ${state.eC.toFixed(3)}$$`;
+
+        updateCharts();
+        setTimeout(refreshMath, 10);
+    }
+
+    function updateCharts() {
+        if(pvChart) pvChart.destroy();
+        // Ciclo P-V idealizado: Caldera -> Pistón -> Condensador -> Caldera
+        const pvData = [
+            {x: 1, y: 1}, {x: 1, y: 10 * state.eC + 2}, {x: 3, y: 8 * state.eC + 1}, {x: 4, y: 1}, {x: 1, y: 1}
+        ];
+        pvChart = new Chart(document.getElementById('pvChart'), {
+            type: 'scatter',
+            data: { datasets: [{ label: 'Ciclo Termodinámico', data: pvData, showLine: true, borderColor: '#e67e22', backgroundColor: 'rgba(230,126,34,0.1)' }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: {
+                y: { title: {display: true, text: 'P [atm]'}, min: 0, max: 12 },
+                x: { title: {display: true, text: 'V [L]'}, min: 0, max: 5 }
+            }, plugins: { legend: { display: false } }}
+        });
+
+        if(effChart) effChart.destroy();
+        const temps = [373, 500, 600, 700, 800, 900];
+        const effs = temps.map(t => (1 - state.Tc / t) * 100);
+        effChart = new Chart(document.getElementById('effChart'), {
+            type: 'line',
+            data: { labels: temps, datasets: [{ label: 'Límite Carnot [%]', data: effs, borderColor: '#1a7a8c', tension: 0.3 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: {
+                y: { title: {display: true, text: 'Eficiencia %'}, min: 0, max: 100 },
+                x: { title: {display: true, text: 'T Caldera [K]' } }
+            }, plugins: { legend: { display: false } }}
+        });
+    }
+
+    // Inicializar partículas en ciclo cerrado con ruta de tuberías
+    function initParticles() {
+        particles = [];
+        for(let i=0; i<40; i++) {
+            particles.push({ t: Math.random() });
+        }
+    }
+
+    // Función de interpolación lineal para seguir una ruta compleja
+    function getPathPos(t) {
+        const w = canvas.width, h = canvas.height;
+        // Puntos de control (Nodos) de la máquina: Caldera -> Codo1 -> Pistón -> Codo2 -> Condensador -> Bomba -> Caldera
+        const pts = [
+            {x: w*0.14, y: h*0.75}, // 0: Caldera
+            {x: w*0.14, y: h*0.22}, // 1: Codo superior
+            {x: w*0.40, y: h*0.22}, // 2: Entrada Cilindro
+            {x: w*0.40, y: h*0.75}, // 3: Bajada Condensador
+            {x: w*0.30, y: h*0.75}, // 4: Paso Condensador
+            {x: w*0.14, y: h*0.75}  // 5: Retorno Caldera
+        ];
+
+        const section = Math.floor(t * (pts.length - 1));
+        const localT = (t * (pts.length - 1)) % 1;
+        const p1 = pts[section], p2 = pts[section + 1];
+
+        return {
+            x: p1.x + (p2.x - p1.x) * localT,
+            y: p1.y + (p2.y - p1.y) * localT,
+            phase: (section < 3) ? 'steam' : 'water' // Cambio de fase visual
+        };
+    }
+
+    function drawComponent(x, y, w, h, color, label) {
+        // Estética Imagen 2
+        let grad = ctx.createLinearGradient(x, y, x, y + h);
+        grad.addColorStop(0, color); grad.addColorStop(1, "#333");
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = "#444"; ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 10px Arial";
+        ctx.fillText(label, x + 5, y - 5);
+    }
+
+    function animate() {
+        if (canvas.width !== canvas.clientWidth) { canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        angle += state.speed * 0.04; // Velocidad normalizada
+        const pistonX = Math.cos(angle) * 35;
+        const w = canvas.width, h = canvas.height;
+        const wheelX = w * 0.72, wheelY = h * 0.45;
+
+        // --- CAPA 1: FONDO Y COMPONENTES ---
+
+        // Tuberías metálicas
+        ctx.strokeStyle = "#ccc"; ctx.lineWidth = 14; ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo(w*0.14, h*0.75); ctx.lineTo(w*0.14, h*0.22); ctx.lineTo(w*0.40, h*0.22);
+        ctx.lineTo(w*0.40, h*0.75); ctx.lineTo(w*0.14, h*0.75);
+        ctx.stroke();
+
+        // Caldera y Condensador (Estilo Imagen 2)
+        drawComponent(w*0.07, h*0.6, 100, 120, "#95a5a6", "CALDERA (Th)");
+        // Animación Fuego Caldera
+        ctx.fillStyle = "#e67e22";
+        for(let i=0; i<4; i++) {
+            let fh = 10 + Math.random()*15;
+            ctx.fillRect(w*0.08 + i*22, h*0.85 - fh, 15, fh);
+        }
+        drawComponent(w*0.25, h*0.7, 120, 50, "#3498db", "CONDENSADOR (Tc)");
+
+        // --- CAPA 2: CILINDRO INTERIOR Y PISTÓN (Nivel de usuario corregido) ---
+
+        // El cilindro es la "caja" metálica, el interior es oscuro.
+        const cylX = w*0.34, cylY = h*0.15, cylW = 120, cylH = 50;
+        ctx.fillStyle = "#333"; ctx.fillRect(cylX, cylY, cylW, cylH); // Interior Oscuro
+
+        // El pistón debe estar *dentro* del cilindro.
+        ctx.fillStyle = "#bdc3c7";
+        ctx.fillRect(w*0.38 + pistonX, h*0.16, 15, 40); // Pistón moviéndose por dentro
+
+        // El borde metálico del cilindro debe dibujarse *después* para contener visualmente el pistón.
+        ctx.strokeStyle = "#444"; ctx.lineWidth = 4;
+        ctx.strokeRect(cylX, cylY, cylW, cylH);
+
+        // --- CAPA 3: MECANISMO DE BIELA-MANIVELA (Por encima del cilindro) ---
+
+        // Volante de Inercia (Flywheel) con radios (Imagen 2)
+        ctx.save(); ctx.translate(wheelX, wheelY); ctx.rotate(angle);
+        ctx.beginPath(); ctx.arc(0,0, 60, 0, 7); ctx.strokeStyle="#7f8c8d"; ctx.lineWidth=12; ctx.stroke();
+        for(let i=0; i<6; i++) {
+            ctx.rotate(Math.PI/3); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(55,0); ctx.lineWidth=4; ctx.stroke();
+        }
+        ctx.restore();
+
+        // Biela (Connecting Rod)
+        ctx.strokeStyle = "#444"; ctx.lineWidth = 5;
+        const pinX = wheelX + Math.cos(angle) * 35;
+        const pinY = wheelY + Math.sin(angle) * 35;
+        // La biela se conecta al pistón en el centro del cilindro.
+        ctx.beginPath(); ctx.moveTo(w*0.39 + pistonX, h*0.16 + 20); ctx.lineTo(pinX, pinY); ctx.stroke();
+
+        // --- CAPA 4: PARTÍCULAS (Por dentro de las tuberías) ---
+
+        particles.forEach(p => {
+            p.t += state.speed * 0.002;
+            if(p.t >= 1) p.t = 0;
+            const pos = getPathPos(p.t);
+            ctx.fillStyle = pos.phase === 'steam' ? "rgba(255,255,255,0.7)" : "#3498db";
+            ctx.beginPath(); ctx.arc(pos.x, pos.y, 4, 0, 7); ctx.fill();
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    window.onload = () => { initParticles(); updateValues(); animate(); };
+</script>
+</body>
+</html>
