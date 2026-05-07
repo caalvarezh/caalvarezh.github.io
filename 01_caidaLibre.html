@@ -14,6 +14,13 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
         onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+    <style>
+        .modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .modal[hidden] { display: none !important; }
+        .modal-content { background: white; padding: 2rem; border-radius: 24px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .modal-header h2 { margin: 0; font-family: 'Montserrat'; color: var(--md-sys-color-primary); }
+    </style>
 </head>
 
 <body class="sim-body">
@@ -31,8 +38,11 @@
             </div>
         </div>
 
-        <div style="flex: 1; display: flex; justify-content: flex-end;">
+        <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 1rem;">
             <div id="clock" style="font-family: monospace; font-weight: bold; font-size: 1.2rem;">0.00 s</div>
+            <button id="btn-help" class="btn btn-icon" aria-label="Ayuda" onclick="toggleModal(true)" style="background: transparent; border: none; cursor: pointer; color: var(--md-sys-color-primary); width: auto; padding: 0;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+            </button>
         </div>
     </header>
 
@@ -107,7 +117,28 @@
         </aside>
     </div>
 
+    <div id="help-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="modal-title">Ayuda e Instrucciones</h2>
+                <button class="btn" onclick="toggleModal(false)" style="width: auto; padding: 0.5rem; background: transparent; color: black; font-size: 1.5rem; border: none; cursor: pointer;">&times;</button>
+            </header>
+            <div class="modal-body">
+                <p>Bienvenido a la simulación de Caída Libre.</p>
+                <ul>
+                    <li><strong>Configuración:</strong> Selecciona el cuerpo celeste para cambiar la gravedad, ajusta la altura inicial y la masa del objeto.</li>
+                    <li><strong>Simulación:</strong> Haz clic en <strong>SOLTAR</strong> para observar el movimiento acelerado sin fricción.</li>
+                    <li><strong>Análisis:</strong> Revisa el tiempo de caída, la velocidad de impacto y el intercambio de energía potencial a cinética.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <script>
+        function toggleModal(show) {
+            document.getElementById('help-modal').hidden = !show;
+        }
+
         // --- MOTOR DE AUDIO (Accesibilidad) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         let fallOscillator = null;

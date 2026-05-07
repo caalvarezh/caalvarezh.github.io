@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>CicloSim Hidro v3.0 - Laboratorio de Energía Hidroeléctrica</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: var(--md-sys-color-primary);
+            --secondary: var(--md-sys-color-primary-container);
+            --accent: #e67e22;
+        }
+
+        label { display: flex; justify-content: space-between; font-weight: 600; font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 5px; }
+        input[type="range"] { width: 100%; accent-color: var(--primary); }
+        .stats-box { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #eee; margin-top: auto; }
+        .stat-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
+        .stat-item strong { color: var(--primary); }
+
+        /* Visualización Central */
+        .center-column { display: flex; flex-direction: column; gap: 15px; }
+        #visual-container { background: #fdfdfd; border-radius: 8px; flex: 1; min-height: 250px; max-height: 380px; position: relative; border: 1px solid #ddd; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .math-box { background: #fff; border-radius: 8px; padding: 15px; border: 1px solid #ddd; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.1rem; min-height: 100px; overflow-x: auto; max-width: 100%; box-sizing: border-box; }
+
+        /* Gráficos - Derecha */
+        .chart-container { display: flex; flex-direction: column; gap: 15px; height: 100%; }
+        .chart-box { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; flex: 1; display: flex; flex-direction: column; }
+        .chart-title { font-size: 0.9rem; font-weight: 600; text-align: center; margin-bottom: 10px; color: var(--secondary); }
+        .canvas-wrapper { flex: 1; position: relative; min-height: 0; }
+        
+        /* Modal Profesional */
+        .modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .modal[hidden] { display: none !important; }
+        .modal-content { background: white; width: 90%; max-width: 1000px; max-height: 90vh; border-radius: 24px; overflow-y: auto; padding: 0; position: relative; border-top: 15px solid var(--primary); }
+        .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
+        .modal-body { padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .help-card { background: #f9f9f9; border-radius: 8px; padding: 15px; border: 1px solid #eee; }
+        .help-card h3 { margin-top: 0; font-size: 1.1rem; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 3px; }
+    </style>
+</head>
+<body class="sim-body light-theme">
+
+<header>
+    <div style="flex: 1;">
+        <h1 class="sim-h1">CicloSim Hidro v3.0 - Laboratorio de Energía Hidroeléctrica</h1>
+    </div>
+    <div class="nav-container">
+        <div class="nav-pill">
+            <a href="index.html" class="btn-nav">
+                <span>🏠</span> Volver al inicio
+            </a>
+        </div>
+    </div>
+    <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem;">
+        <button id="btn-help" class="btn btn-icon" aria-label="Ayuda" onclick="toggleModal(true)" style="background: transparent; border: none; cursor: pointer; color: var(--md-sys-color-primary);">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+        </button>
+    </div>
+</header>
+
+<div class="main-container">
+    <aside class="panel">
+        <div class="control-group">
+            <label>Carga Bruta ($h$): <span id="valH">20m</span></label>
+            <input type="range" id="rngH" min="10" max="50" value="20" oninput="update()">
+        </div>
+        <div class="control-group">
+            <label>Diámetro Tubería ($D$): <span id="valD">1.2m</span></label>
+            <input type="range" id="rngD" min="0.5" max="3" value="1.2" step="0.1" oninput="update()">
+        </div>
+        <div class="control-group">
+            <label>Apertura Válvula ($A$): <span id="valA">50%</span></label>
+            <input type="range" id="rngA" min="10" max="100" value="50" oninput="update()">
+        </div>
+        <div class="control-group">
+            <label>Carga Eléctrica: <span id="valLoad">40%</span></label>
+            <input type="range" id="rngLoad" min="10" max="100" value="40" oninput="update()">
+        </div>
+        <div class="control-group">
+            <label>Polos Generador ($p$): <span id="valP">4</span></label>
+            <input type="range" id="rngP" min="2" max="12" step="2" value="4" oninput="update()">
+        </div>
+
+        <div class="stats-box">
+            <div style="font-weight:bold; margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:5px;">Quick Stats</div>
+            <div class="stat-item"><span>Caudal ($Q$):</span> <strong id="resQ">0 m³/s</strong></div>
+            <div class="stat-item"><span>Potencia Neta ($P$):</span> <strong id="resP">0 kW</strong></div>
+            <div class="stat-item"><span>Frecuencia ($f$):</span> <strong id="resF">0 Hz</strong></div>
+        </div>
+    </aside>
+
+    <section class="center-column">
+        <div id="visual-container">
+            <canvas id="hydroCanvas"></canvas>
+        </div>
+        <div class="math-box">
+            <div id="eq1"></div>
+            <div id="eq2" style="margin-top: 10px;"></div>
+        </div>
+    </section>
+
+    <aside class="panel chart-container" style="padding:0; background:transparent; border:none; box-shadow:none;">
+        <div class="chart-box">
+            <div class="chart-title">Análisis de Potencia vs Caudal ($Q$)</div>
+            <div class="canvas-wrapper"><canvas id="powerChart"></canvas></div>
+        </div>
+        <div class="chart-box">
+            <div class="chart-title">Diagrama de Flujo de Energía (Pérdidas)</div>
+            <div class="canvas-wrapper"><canvas id="sankeyChart"></canvas></div>
+        </div>
+    </aside>
+</div>
+
+<!-- MODAL DE AYUDA -->
+<div id="helpModal" class="modal" role="dialog" aria-modal="true" hidden>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 style="margin:0; font-family: 'Montserrat'; color: var(--primary);">Manual del Laboratorio Hidroeléctrico</h2>
+            <button class="btn" style="width: auto; padding: 0.5rem; background: transparent; color: black; font-size: 1.5rem; border: none; cursor: pointer;" onclick="toggleModal(false)">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="help-card" style="grid-column: 1 / 3;">
+                <h3>1. Fenómeno Físico: Conversión de Energía Hidráulica</h3>
+                <p>Una central hidroeléctrica convierte la <strong>energía potencial gravitacional</strong> del agua almacenada en un embalse en energía eléctrica. El agua desciende por la tubería forzada ganando velocidad y perdiendo presión. Parte de esta energía se disipa por fricción (pérdida de carga $h_f$).</p>
+                <div class="math-box" style="font-size:1rem; padding:10px; min-height:auto;">$$h_{neta} = h_{bruta} - \frac{v^2}{2g} \left( f \frac{L}{D} \right)$$</div>
+            </div>
+
+            <div class="help-card">
+                <h3>2. Uso de la Simulación</h3>
+                <p><strong>Configuración Hidráulica:</strong> Ajusta la <em>Carga Bruta</em> (altura del embalse), el <em>Diámetro de la Tubería</em> y la <em>Apertura de la Válvula</em>. Observa cómo al aumentar el caudal, las pérdidas por fricción aumentan drásticamente (proporcionales a $v^2$).</p>
+                <p><strong>Configuración Eléctrica:</strong> Varía la <em>Carga Eléctrica</em> y los <em>Polos del Generador</em> para observar cómo cambia la frecuencia final de la red ($f$).</p>
+            </div>
+
+            <div class="help-card">
+                <h3>3. Modelo Matemático y Gráficos</h3>
+                <p><strong>Potencia vs Caudal:</strong> La curva muestra que la potencia no crece infinitamente con el caudal. Existe un punto de máxima transferencia de energía, después del cual las pérdidas por fricción en la tubería dominan.</p>
+                <p><strong>Diagrama de Flujo (Sankey):</strong> Visualiza la conservación de la energía y dónde se generan las pérdidas (Potencia Bruta $\rightarrow$ Pérdida por fricción $\rightarrow$ Potencia Neta $\rightarrow$ Potencia Eléctrica).</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleModal(show) {
+        document.getElementById('helpModal').hidden = !show;
+        if(show) setTimeout(refreshMath, 50);
+    }
+    const canvas = document.getElementById('hydroCanvas');
+    const ctx = canvas.getContext('2d');
+    let powerChart, sankeyChart;
+    let turbineAngle = 0;
+    let particles = [];
+
+    // Constantes Físicas
+    const g = 9.81;
+    const rho = 1000;
+    const f_friction = 0.02; // Factor de fricción de Darcy
+    const L_pipe = 100; // Longitud estimada de tubería
+    const eta_global = 0.85; // Eficiencia electromecánica
+
+    let state = {
+        h_bruta: 20, D: 1.2, valve: 0.5, load: 40, poles: 4,
+        h_neta: 0, v: 0, Q: 0, P: 0, freq: 0
+    };
+
+    function refreshMath() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [{left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false}]
+            });
+        }
+    }
+
+    function update() {
+        state.h_bruta = parseFloat(document.getElementById('rngH').value);
+        state.D = parseFloat(document.getElementById('rngD').value);
+        state.valve = parseFloat(document.getElementById('rngA').value) / 100;
+        state.load = parseFloat(document.getElementById('rngLoad').value);
+        state.poles = parseInt(document.getElementById('rngP').value);
+
+        document.getElementById('valH').innerText = state.h_bruta + "m";
+        document.getElementById('valD').innerText = state.D + "m";
+        document.getElementById('valA').innerText = (state.valve * 100).toFixed(0) + "%";
+        document.getElementById('valLoad').innerText = state.load + "%";
+        document.getElementById('valP').innerText = state.poles;
+
+        // --- MODELO FÍSICO RIGUROSO ---
+        const Area = Math.PI * Math.pow(state.D / 2, 2);
+
+        // Ecuación de Bernoulli con pérdidas por fricción (Darcy-Weisbach)
+        // Aproximación iterativa simple para v
+        let v_ideal = Math.sqrt(2 * g * state.h_bruta) * state.valve;
+        let h_f = f_friction * (L_pipe / state.D) * (Math.pow(v_ideal, 2) / (2 * g));
+
+        state.h_neta = Math.max(0, state.h_bruta - h_f);
+        state.v = Math.sqrt(2 * g * state.h_neta) * state.valve;
+        state.Q = Area * state.v;
+
+        // Potencia generada
+        state.P = eta_global * rho * g * state.Q * state.h_neta / 1000; // kW
+
+        // Frecuencia eléctrica (Generador síncrono)
+        const rpm = (state.v * 30) / (1 + state.load/100);
+        state.freq = (state.poles * rpm) / 120;
+
+        // Actualizar UI
+        document.getElementById('resQ').innerText = state.Q.toFixed(1) + " m³/s";
+        document.getElementById('resP').innerText = state.P.toFixed(0) + " kW";
+        document.getElementById('resF').innerText = state.freq.toFixed(1) + " Hz";
+
+        // Ecuaciones KaTeX
+        document.getElementById('eq1').innerHTML = `$$h_{neta} = h_{bruta} - h_f = h_{bruta} - \\frac{v^2}{2g} \\left( f \\frac{L}{D} \\right)$$`;
+        document.getElementById('eq2').innerHTML = `$$P = \\eta \\rho g Q h_{neta} = 0.85 \\cdot 1000 \\cdot ${state.Q.toFixed(1)} \\cdot 9.81 \\cdot ${state.h_neta.toFixed(1)}$$`;
+
+        updateCharts();
+        setTimeout(refreshMath, 10);
+    }
+
+    function updateCharts() {
+        // Gráfico 1: Parábola de Potencia vs Caudal (demostrando límite por fricción)
+        if(powerChart) powerChart.destroy();
+        let qData = [], pData = [];
+        for(let a=0; a<=1; a+=0.1) {
+            let v_i = Math.sqrt(2 * g * state.h_bruta) * a;
+            let hf_i = f_friction * (L_pipe / state.D) * (Math.pow(v_i, 2) / (2 * g));
+            let hn_i = Math.max(0, state.h_bruta - hf_i);
+            let v_real = Math.sqrt(2 * g * hn_i) * a;
+            let q_i = Math.PI * Math.pow(state.D / 2, 2) * v_real;
+            let p_i = eta_global * rho * g * q_i * hn_i / 1000;
+            qData.push(q_i.toFixed(1));
+            pData.push(p_i);
+        }
+
+        powerChart = new Chart(document.getElementById('powerChart'), {
+            type: 'line',
+            data: { labels: qData, datasets: [{ data: pData, borderColor: '#1e81b0', backgroundColor: 'rgba(30,129,176,0.1)', fill: true, tension: 0.4 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x:{title:{display:true,text:'Caudal (Q)'}}, y:{title:{display:true,text:'Potencia (kW)'}} }, plugins: { legend: { display: false } } }
+        });
+
+        // Gráfico 2: Balance de Energía (Sankey Simplificado)
+        if(sankeyChart) sankeyChart.destroy();
+        const P_bruta = rho * g * state.Q * state.h_bruta / 1000;
+        const P_friccion = rho * g * state.Q * (state.h_bruta - state.h_neta) / 1000;
+        const P_mecanica = P_bruta - P_friccion;
+
+        sankeyChart = new Chart(document.getElementById('sankeyChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Potencial Bruta', 'Cinética (Neta)', 'Eléctrica Útil'],
+                datasets: [{
+                    data: [P_bruta, P_mecanica, state.P],
+                    backgroundColor: ['#2c3e50', '#1e81b0', '#e67e22']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+    }
+
+    function initParticles() {
+        particles = [];
+        for(let i=0; i<60; i++) particles.push({ t: Math.random() });
+    }
+
+    function drawLabel(text, x, y) {
+        ctx.fillStyle = "#333"; ctx.font = "bold 11px Arial";
+        ctx.fillText(text, x, y);
+    }
+
+    function animate() {
+        if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+            canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight;
+        }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const w = canvas.width, h = canvas.height;
+        turbineAngle += (state.v / 50);
+
+        ctx.save();
+        ctx.translate(0, -h * 0.18);
+        const floor = h * 1.25;
+
+        // Geometría del terreno y represa
+        ctx.fillStyle = "#8a9a9b"; // Color concreto
+        ctx.beginPath();
+        ctx.moveTo(w*0.25, floor); ctx.lineTo(w*0.3, h*0.3); ctx.lineTo(w*0.35, h*0.3);
+        ctx.lineTo(w*0.4, h*0.5); ctx.lineTo(w*0.6, h*0.5); ctx.lineTo(w*0.6, floor);
+        ctx.fill();
+
+        // Terreno derecho
+        ctx.fillStyle = "#2c3e50";
+        ctx.beginPath(); ctx.moveTo(w*0.6, floor); ctx.lineTo(w*0.6, h*0.65); ctx.lineTo(w, h*0.65); ctx.lineTo(w, floor); ctx.fill();
+
+        // Agua Embalse
+        const waterY = h - (state.h_bruta / 50) * (h * 0.7);
+        ctx.fillStyle = "#1e81b0";
+        ctx.fillRect(0, waterY, w*0.29, floor - waterY);
+        drawLabel("EMBALSE", 20, waterY - 10);
+
+        // Tubería Forzada
+        ctx.strokeStyle = "#444"; ctx.lineWidth = Math.max(10, state.D * 12);
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo(w*0.29, h*0.4); ctx.lineTo(w*0.45, h*0.75); ctx.lineTo(w*0.55, h*0.75);
+        ctx.stroke();
+        drawLabel("TUBERÍA FORZADA", w*0.3, h*0.35);
+
+        // Desagüe
+        ctx.fillStyle = "#1e81b0";
+        ctx.beginPath(); ctx.moveTo(w*0.55, h*0.75); ctx.quadraticCurveTo(w*0.58, h*0.9, w*0.65, h*0.9); ctx.lineTo(w, h*0.9); ctx.lineTo(w, floor); ctx.lineTo(w*0.55, floor); ctx.fill();
+
+        // Turbina y Casa de Máquinas
+        const tx = w*0.53, ty = h*0.75;
+
+        // Generador
+        ctx.fillStyle = "#f1f2f6"; ctx.fillRect(tx-35, ty-100, 70, 60); ctx.strokeRect(tx-35, ty-100, 70, 60);
+        ctx.fillStyle = "#f39c12"; ctx.fillRect(tx-25, ty-90, 50, 40); // Motor amarillo
+        drawLabel("GENERADOR", tx-30, ty-110);
+
+        // Eje
+        ctx.fillStyle = "#7f8c8d"; ctx.fillRect(tx-5, ty-40, 10, 40);
+
+        // Turbina Francis (Giro)
+        ctx.save(); ctx.translate(tx, ty); ctx.rotate(turbineAngle);
+        ctx.fillStyle = "#555";
+        for(let i=0; i<4; i++) {
+            ctx.rotate(Math.PI/2);
+            ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(25, 10); ctx.lineTo(25, -10); ctx.fill();
+        }
+        ctx.restore();
+        drawLabel("TURBINA", tx-20, ty+30);
+
+        // Transformador y Líneas
+        const trX = w*0.7, trY = h*0.65 - 40;
+        ctx.fillStyle = "#34495e"; ctx.fillRect(trX, trY, 40, 40);
+        ctx.fillStyle = "#95a5a6"; ctx.fillRect(trX+10, trY-10, 5, 10); ctx.fillRect(trX+25, trY-10, 5, 10);
+        drawLabel("TRANSFORMADOR", trX-20, trY-20);
+
+        // Conexión Generador -> Transformador
+        ctx.strokeStyle = state.P > 10 ? "#f39c12" : "#999"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(tx+35, ty-70); ctx.lineTo(trX, trY+20); ctx.stroke();
+
+        // Torre y Ciudad
+        const twX = w*0.85, twY = h*0.65 - 80;
+        ctx.strokeStyle = "#555"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(twX, h*0.65); ctx.lineTo(twX+10, twY); ctx.lineTo(twX+20, h*0.65); ctx.stroke(); // Torre simple
+
+        ctx.fillStyle = "#7f8c8d"; ctx.fillRect(w*0.92, h*0.65 - 50, 30, 50); // Edificio
+        ctx.fillRect(w*0.96, h*0.65 - 30, 20, 30);
+
+        // Líneas de Alta Tensión
+        ctx.strokeStyle = state.P > 10 ? "#f39c12" : "#999";
+        ctx.beginPath(); ctx.moveTo(trX+25, trY-10); ctx.lineTo(twX+10, twY); ctx.lineTo(w*0.92, h*0.65-45); ctx.stroke();
+        drawLabel("LÍNEAS DE", twX-10, twY-20); drawLabel("TRANSMISIÓN", twX-15, twY-10);
+
+        // Partículas de Agua
+        particles.forEach(p => {
+            p.t += (state.v * 0.001) * (state.Q > 0 ? 1 : 0);
+            if(p.t >= 1) p.t = 0;
+
+            let px, py;
+            if(p.t < 0.6) { // Tubería
+                let lt = p.t / 0.6;
+                px = w*0.29 + (w*0.16 * lt); py = h*0.4 + (h*0.35 * lt);
+            } else { // Desagüe
+                let lt = (p.t - 0.6) / 0.4;
+                px = tx + (w*0.2 * lt); py = ty + (15 * Math.sin(lt*5));
+            }
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.beginPath(); ctx.arc(px, py, 2.5, 0, 7); ctx.fill();
+        });
+
+        ctx.restore();
+        requestAnimationFrame(animate);
+    }
+
+    window.onload = () => { initParticles(); update(); animate(); };
+</script>
+</body>
+</html>
