@@ -15,11 +15,20 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
         onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
     <style>
+        :root {
+            --primary: var(--md-sys-color-primary, #1e81b0);
+            --accent: #e67e22;
+        }
+        /* Modal Profesional */
         .modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
         .modal[hidden] { display: none !important; }
-        .modal-content { background: white; padding: 2rem; border-radius: 24px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .modal-header h2 { margin: 0; font-family: 'Montserrat'; color: var(--md-sys-color-primary); }
+        .modal-content { background: white; width: 90%; max-width: 1000px; max-height: 90vh; border-radius: 24px; overflow-y: auto; padding: 0; position: relative; border-top: 15px solid var(--primary); }
+        .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
+        .modal-header h2 { margin: 0; font-family: 'Montserrat'; color: var(--primary); }
+        .modal-body { padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .help-card { background: #f9f9f9; border-radius: 8px; padding: 15px; border: 1px solid #eee; }
+        .help-card h3 { margin-top: 0; font-size: 1.1rem; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 3px; }
+        .math-box { background: #fff; border-radius: 8px; padding: 10px; border: 1px solid #ddd; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.1rem; min-height: auto; overflow-x: auto; max-width: 100%; box-sizing: border-box; margin-top: 10px; }
     </style>
 </head>
 
@@ -120,16 +129,29 @@
     <div id="help-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
         <div class="modal-content">
             <header class="modal-header">
-                <h2 id="modal-title">Ayuda e Instrucciones</h2>
+                <h2 id="modal-title">Manual del Laboratorio de Caída Libre</h2>
                 <button class="btn" onclick="toggleModal(false)" style="width: auto; padding: 0.5rem; background: transparent; color: black; font-size: 1.5rem; border: none; cursor: pointer;">&times;</button>
             </header>
             <div class="modal-body">
-                <p>Bienvenido a la simulación de Caída Libre.</p>
-                <ul>
-                    <li><strong>Configuración:</strong> Selecciona el cuerpo celeste para cambiar la gravedad, ajusta la altura inicial y la masa del objeto.</li>
-                    <li><strong>Simulación:</strong> Haz clic en <strong>SOLTAR</strong> para observar el movimiento acelerado sin fricción.</li>
-                    <li><strong>Análisis:</strong> Revisa el tiempo de caída, la velocidad de impacto y el intercambio de energía potencial a cinética.</li>
-                </ul>
+                <div class="help-card" style="grid-column: 1 / 3;">
+                    <h3>1. Fenómeno Físico: Movimiento Rectilíneo Uniformemente Acelerado</h3>
+                    <p>La <strong>caída libre</strong> es un caso particular de movimiento rectilíneo uniformemente acelerado (MRUA) en el que un objeto cae bajo la influencia exclusiva de la gravedad local ($g$). En este modelo ideal, se desprecia la resistencia del aire u otros tipos de fricción.</p>
+                    <div class="math-box">
+                        $$h(t) = h_0 - \frac{1}{2}gt^2 \quad \text{y} \quad v(t) = -gt$$
+                    </div>
+                </div>
+
+                <div class="help-card">
+                    <h3>2. Uso de la Simulación</h3>
+                    <p><strong>Configuración Inicial:</strong> Modifica la <em>Gravedad</em> seleccionando distintos cuerpos celestes (Tierra, Luna, Marte, etc.). Ajusta la <em>Altura Inicial ($h_0$)</em> y la <em>Masa</em> del objeto mediante las tarjetas visuales o ingresando los valores.</p>
+                    <p><strong>Controles:</strong> Presiona <strong>SOLTAR ▶</strong> para iniciar la caída libre. Usa el botón <strong>RESETEAR</strong> para volver a las condiciones iniciales.</p>
+                </div>
+
+                <div class="help-card">
+                    <h3>3. Modelo Matemático y Gráficos</h3>
+                    <p><strong>Métricas de Tiempo Real:</strong> El simulador muestra la altura actual, velocidad instantánea, tiempo transcurrido y la velocidad final al momento del impacto (velocidad terminal ideal).</p>
+                    <p><strong>Conservación de Energía:</strong> Observa las barras de energía en el panel derecho. La energía mecánica total ($E_m = U + K$) se conserva, visualizando cómo la energía potencial ($U$) se transforma íntegramente en energía cinética ($K$) a medida que el objeto cae.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -137,6 +159,16 @@
     <script>
         function toggleModal(show) {
             document.getElementById('help-modal').hidden = !show;
+            if (show && typeof renderMathInElement !== 'undefined') {
+                setTimeout(() => {
+                    renderMathInElement(document.getElementById('help-modal'), {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false}
+                        ]
+                    });
+                }, 50);
+            }
         }
 
         // --- MOTOR DE AUDIO (Accesibilidad) ---

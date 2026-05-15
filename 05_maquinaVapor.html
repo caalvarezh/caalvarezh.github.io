@@ -161,7 +161,7 @@
         // Cálculos Físicos
         state.eC = 1 - (state.Tc / state.Th);
         state.W = 1000 * state.eC; // Simplificación física para W
-        state.speed = (state.W / state.load) * 0.8;
+        state.speed = (state.W / state.load) * 0.4; // Ajustado de 0.8 a 0.4 para movimiento visual más lento
 
         document.getElementById('resEC').innerText = (state.eC * 100).toFixed(1);
         document.getElementById('resW').innerText = state.W.toFixed(0);

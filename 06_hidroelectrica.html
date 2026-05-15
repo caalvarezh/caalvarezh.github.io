@@ -160,6 +160,7 @@
     const ctx = canvas.getContext('2d');
     let powerChart, sankeyChart;
     let turbineAngle = 0;
+    let elecOffset = 0;
     let particles = [];
 
     // Constantes Físicas
@@ -301,7 +302,7 @@
         ctx.beginPath(); ctx.moveTo(w*0.6, floor); ctx.lineTo(w*0.6, h*0.65); ctx.lineTo(w, h*0.65); ctx.lineTo(w, floor); ctx.fill();
 
         // Agua Embalse
-        const waterY = h - (state.h_bruta / 50) * (h * 0.7);
+        const waterY = h * 0.675 - (state.h_bruta / 50) * (h * 0.375);
         ctx.fillStyle = "#1e81b0";
         ctx.fillRect(0, waterY, w*0.29, floor - waterY);
         drawLabel("EMBALSE", 20, waterY - 10);
@@ -310,9 +311,9 @@
         ctx.strokeStyle = "#444"; ctx.lineWidth = Math.max(10, state.D * 12);
         ctx.lineJoin = "round";
         ctx.beginPath();
-        ctx.moveTo(w*0.29, h*0.4); ctx.lineTo(w*0.45, h*0.75); ctx.lineTo(w*0.55, h*0.75);
+        ctx.moveTo(w*0.28, h*0.65); ctx.lineTo(w*0.45, h*0.75); ctx.lineTo(w*0.55, h*0.75);
         ctx.stroke();
-        drawLabel("TUBERÍA FORZADA", w*0.3, h*0.35);
+        drawLabel("TUBERÍA FORZADA", w*0.3, h*0.6);
 
         // Desagüe
         ctx.fillStyle = "#1e81b0";
@@ -323,11 +324,37 @@
 
         // Generador
         ctx.fillStyle = "#f1f2f6"; ctx.fillRect(tx-35, ty-100, 70, 60); ctx.strokeRect(tx-35, ty-100, 70, 60);
+        
+        if (state.P > 10) {
+            ctx.shadowColor = "#f1c40f"; ctx.shadowBlur = 15 + 5 * Math.sin(turbineAngle * 5);
+        }
         ctx.fillStyle = "#f39c12"; ctx.fillRect(tx-25, ty-90, 50, 40); // Motor amarillo
-        drawLabel("GENERADOR", tx-30, ty-110);
+        ctx.shadowBlur = 0; // reset
+        
+        // Efecto visual de "chispas" si genera mucha potencia
+        if (state.P > 100) {
+            ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 1.5;
+            for(let i=0; i<3; i++) {
+                if(Math.random() > 0.4) {
+                    let rX = tx - 30 + Math.random()*60;
+                    let rY = ty - 100 - Math.random()*15;
+                    ctx.beginPath(); ctx.moveTo(rX, rY); ctx.lineTo(rX+5, rY-8); ctx.lineTo(rX-2, rY-14); ctx.stroke();
+                }
+            }
+        }
+        drawLabel("GENERADOR", tx-30, ty-115);
 
-        // Eje
+        // Eje (Animado con patrón de rotación)
         ctx.fillStyle = "#7f8c8d"; ctx.fillRect(tx-5, ty-40, 10, 40);
+        ctx.save();
+        ctx.beginPath(); ctx.rect(tx-5, ty-40, 10, 40); ctx.clip();
+        ctx.strokeStyle = "#333"; ctx.lineWidth = 2;
+        let shaftOffset = (turbineAngle * 15) % 15;
+        for(let j=-2; j<5; j++) {
+            let yPos = ty - 40 + shaftOffset + j*15;
+            ctx.beginPath(); ctx.moveTo(tx-5, yPos); ctx.lineTo(tx+5, yPos+5); ctx.stroke();
+        }
+        ctx.restore();
 
         // Turbina Francis (Giro)
         ctx.save(); ctx.translate(tx, ty); ctx.rotate(turbineAngle);
@@ -345,10 +372,6 @@
         ctx.fillStyle = "#95a5a6"; ctx.fillRect(trX+10, trY-10, 5, 10); ctx.fillRect(trX+25, trY-10, 5, 10);
         drawLabel("TRANSFORMADOR", trX-20, trY-20);
 
-        // Conexión Generador -> Transformador
-        ctx.strokeStyle = state.P > 10 ? "#f39c12" : "#999"; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(tx+35, ty-70); ctx.lineTo(trX, trY+20); ctx.stroke();
-
         // Torre y Ciudad
         const twX = w*0.85, twY = h*0.65 - 80;
         ctx.strokeStyle = "#555"; ctx.lineWidth = 2;
@@ -357,9 +380,29 @@
         ctx.fillStyle = "#7f8c8d"; ctx.fillRect(w*0.92, h*0.65 - 50, 30, 50); // Edificio
         ctx.fillRect(w*0.96, h*0.65 - 30, 20, 30);
 
-        // Líneas de Alta Tensión
-        ctx.strokeStyle = state.P > 10 ? "#f39c12" : "#999";
-        ctx.beginPath(); ctx.moveTo(trX+25, trY-10); ctx.lineTo(twX+10, twY); ctx.lineTo(w*0.92, h*0.65-45); ctx.stroke();
+        // Cables Base (Muestran conexión física)
+        ctx.strokeStyle = "#777"; ctx.lineWidth = 1.5;
+        ctx.beginPath(); 
+        ctx.moveTo(tx+35, ty-70); ctx.lineTo(trX, trY+20); // a transformador
+        ctx.moveTo(trX+25, trY-10); ctx.lineTo(twX+10, twY); ctx.lineTo(w*0.92, h*0.65-45); // a torre y ciudad
+        ctx.stroke();
+
+        // Flujo Eléctrico (Pulsos animados)
+        if (state.P > 10) {
+            elecOffset -= (state.v * 0.4); // Velocidad proporcional
+            ctx.strokeStyle = "#f1c40f"; 
+            ctx.lineWidth = 3;
+            ctx.shadowColor = "#f39c12"; ctx.shadowBlur = 8;
+            ctx.setLineDash([15, 15]);
+            ctx.lineDashOffset = elecOffset;
+            ctx.beginPath(); 
+            ctx.moveTo(tx+35, ty-70); ctx.lineTo(trX, trY+20); 
+            ctx.moveTo(trX+25, trY-10); ctx.lineTo(twX+10, twY); ctx.lineTo(w*0.92, h*0.65-45); 
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.shadowBlur = 0;
+        }
+
         drawLabel("LÍNEAS DE", twX-10, twY-20); drawLabel("TRANSMISIÓN", twX-15, twY-10);
 
         // Partículas de Agua
@@ -368,12 +411,25 @@
             if(p.t >= 1) p.t = 0;
 
             let px, py;
-            if(p.t < 0.6) { // Tubería
-                let lt = p.t / 0.6;
-                px = w*0.29 + (w*0.16 * lt); py = h*0.4 + (h*0.35 * lt);
+            if(p.t < 0.4) { // Tubería diagonal
+                let lt = p.t / 0.4;
+                px = w*0.28 + (w*0.17 * lt); py = h*0.65 + (h*0.10 * lt);
+            } else if(p.t < 0.6) { // Tubería horizontal
+                let lt = (p.t - 0.4) / 0.2;
+                px = w*0.45 + (w*0.08 * lt); py = h*0.75;
             } else { // Desagüe
                 let lt = (p.t - 0.6) / 0.4;
-                px = tx + (w*0.2 * lt); py = ty + (15 * Math.sin(lt*5));
+                if (lt < 0.3) {
+                    // Caída parabólica desde la turbina hacia el nivel del río
+                    let fallP = lt / 0.3;
+                    px = tx + (w*0.07 * fallP);
+                    py = ty + (h*0.15 * Math.pow(fallP, 1.5));
+                } else {
+                    // Flujo horizontal oscilante en el río
+                    let riverP = (lt - 0.3) / 0.7;
+                    px = tx + w*0.07 + (w*0.35 * riverP);
+                    py = h*0.9 + 5 * Math.sin(riverP * 15);
+                }
             }
             ctx.fillStyle = "rgba(255,255,255,0.7)";
             ctx.beginPath(); ctx.arc(px, py, 2.5, 0, 7); ctx.fill();

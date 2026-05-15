@@ -37,7 +37,7 @@
         .help-card { background: #f9f9f9; border-radius: 8px; padding: 15px; border: 1px solid #eee; }
         .help-card h3 { margin-top: 0; font-size: 1.1rem; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 3px; }
 
-        .math-box { font-size: 1.2rem; background: #f8f9fa; padding: 15px; border-left: 5px solid var(--accent); margin: 10px 0; display: flex; justify-content: center; align-items: center; }
+        .math-box { font-size: 0.9rem; background: #f8f9fa; padding: 10px; border-left: 5px solid var(--accent); margin: 10px 0; display: flex; justify-content: center; align-items: center; overflow-x: auto; overflow-y: hidden; }
         .chart-wrapper { height: 160px; margin-bottom: 10px; }
 
         .selected-gear { background: #d1ecf1 !important; font-weight: bold; border: 2px solid var(--primary); }
@@ -109,6 +109,9 @@
     <aside class="panel">
         <label>Relación de Transmisión ($R$)</label>
         <div class="math-box" id="math-ratio"></div>
+
+        <label>Velocidad Angular Rueda ($\omega_c$)</label>
+        <div class="math-box" id="math-omega"></div>
 
         <label>Velocidad Lineal ($v$)</label>
         <div class="math-box" id="math-vel"></div>
@@ -240,8 +243,11 @@
     function updateOutputs() {
         const ratio = state.selP / state.selC;
         const vel = ratio * (state.rueda/1000) * state.cadencia * 0.06;
+        const omegaRPM = state.cadencia * ratio;
+        const omegaRad = omegaRPM * (Math.PI / 30);
 
         document.getElementById('math-ratio').innerHTML = `$$R = \\frac{Z_p}{Z_c} = ${ratio.toFixed(2)}$$`;
+        document.getElementById('math-omega').innerHTML = `$$\\omega_c = ${omegaRPM.toFixed(1)} \\text{ RPM} = ${omegaRad.toFixed(2)} \\text{ rad/s}$$`;
         document.getElementById('math-vel').innerHTML = `$$v = ${vel.toFixed(1)} \\text{ km/h}$$`;
 
         updateCharts();
