@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artemis II Simple Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/katex.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="left-pane">
+            <header>
+                <div class="brand">
+                    <img src="data:image/svg+xml;utf8,<svg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'><path fill='%2366fcf1' d='M50 10 L80 90 L50 70 L20 90 Z'/></svg>" class="logo" alt="Logo">
+                    <h1 id="header-title">Artemis II <span class="light-text">Simple Simulation</span></h1>
+                </div>
+                <div class="nav-container">
+                    <div class="nav-pill">
+                        <a href="../index.html" class="btn-nav">
+                            <span>🏠</span> Volver al inicio
+                        </a>
+                    </div>
+                </div>
+                <div class="top-actions">
+                    <select id="lang-select">
+                        <option value="ES">ES</option>
+                        <option value="EN">EN</option>
+                        <option value="PT">PT</option>
+                    </select>
+                    <button id="btn-help-icon">?</button>
+                </div>
+            </header>
+            <div class="canvas-wrapper">
+                <canvas id="simulation-canvas"></canvas>
+                <div class="floating-panel legend-panel">
+                    <div class="legend-item">
+                        <div class="line-indicator"></div> <span id="lbl-success-traj">Success Trajectory</span>
+                    </div>
+                    <div class="legend-item">
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        <span id="lbl-free-return">Free-return Flyby Toggle</span>
+                    </div>
+                </div>
+                <div class="floating-panel status-panel">
+                    <span id="lbl-mission-status">Mission Status: Pre-Launch</span>
+                </div>
+                <!-- HUD de Telemetría Dinámico -->
+                <div class="floating-panel telemetry-hud" style="top: auto; left: 20px; bottom: 20px; right: auto; flex-direction: column; gap: 8px; background: rgba(15, 23, 42, 0.85); border-left: 3px solid #38bdf8;">
+                    <div class="hud-item" style="display: flex; align-items: center; gap: 10px; font-family: monospace; font-size: 1rem;">
+                        <span class="icon">🌍</span> <span id="lbl-hud-dist" style="color: #94a3b8; width: 60px;">Dist:</span> 
+                        <strong id="hud-dist-val" style="color: #f8fafc; text-align: right; width: 80px;">0</strong> <span style="color: #64748b; font-size: 0.8rem;">km</span>
+                    </div>
+                    <div class="hud-item" style="display: flex; align-items: center; gap: 10px; font-family: monospace; font-size: 1rem;">
+                        <span class="icon">🚀</span> <span id="lbl-hud-vel" style="color: #94a3b8; width: 60px;">Vel:</span> 
+                        <strong id="hud-vel-val" style="color: #38bdf8; text-align: right; width: 80px;">0.00</strong> <span style="color: #64748b; font-size: 0.8rem;">km/s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <aside class="right-pane">
+            <h2 id="lbl-launch-params" class="panel-title">Artemis II Launch Parameters</h2>
+            
+            <div class="control-section pb">
+                <div class="control-header">
+                    <span class="icon">📅</span> <span id="lbl-launch-date">LAUNCH DATE (UTC)</span>
+                </div>
+                <input type="datetime-local" id="datetime-input" class="param-input" value="2026-04-01T22:35">
+            </div>
+
+            <div class="control-section pb">
+                <div class="control-header">
+                    <span class="icon">⏱️</span> <span id="lbl-launch-vel">LAUNCH VELOCITY (km/s)</span>
+                </div>
+                <div class="range-wrapper">
+                    <input type="range" id="vel-slider" min="10.0" max="15.0" step="0.01" value="10.95">
+                    <div class="val-display" id="val-vel">10.95</div>
+                </div>
+                <div class="slider-limits"><span>Min: 10.0</span><span>Max: 15.0</span></div>
+            </div>
+
+            <div class="control-section pb">
+                <div class="control-header">
+                    <span class="icon">📍</span> <span id="lbl-launch-location">LAUNCH LOCATION</span>
+                </div>
+                <select id="country-select" class="param-input">
+                    <option value="60">🇺🇸 USA (Kennedy Space Center)</option>
+                    <option value="15">🇬🇫 ESA (Guiana Space Centre)</option>
+                    <option value="45">🇷🇺 Russia (Baikonur)</option>
+                    <option value="40">🇨🇳 China (Jiuquan)</option>
+                    <option value="30">🇯🇵 Japan (Tanegashima)</option>
+                </select>
+            </div>
+
+            <div class="control-section pb">
+                <div class="control-header">
+                    <span class="icon">🌍</span> <span id="lbl-perigee">PERIGEE ALTITUDE (km)</span>
+                </div>
+                <div class="range-wrapper">
+                    <input type="range" id="perigee-slider" min="100" max="400" step="1" value="200">
+                    <div class="val-display" id="val-perigee">200</div>
+                </div>
+                <div class="slider-limits"><span>Min: 100</span><span>Max: 400</span></div>
+            </div>
+
+            <div class="control-section pb">
+                <div class="control-header">
+                    <span class="icon">📐</span> <span id="lbl-injection-angle">INJECTION ANGLE OFFSET (deg)</span>
+                </div>
+                <div class="range-wrapper">
+                    <input type="range" id="angle-slider" min="90" max="135" step="0.1" value="110.0">
+                    <div class="val-display" id="val-angle">110.0</div>
+                </div>
+                <div class="slider-limits"><span>Min: 90.0</span><span>Max: 135.0</span></div>
+            </div>
+
+            <button id="btn-start" class="btn-primary">🚀 LAUNCH</button>
+            <button id="btn-reset" class="btn-secondary">RESET SIMULATION</button>
+
+            <div class="telemetry">
+                <h3 id="lbl-telemetry">Telemetry Data (Pre-launch)</h3>
+                <div class="telemetry-row">
+                    <span>🌍 <span id="lbl-moon-pos">MOON POSITION at T+0</span></span>
+                    <span>384,400 km</span>
+                </div>
+                <div class="telemetry-row">
+                    <span>✅ <span id="lbl-success-check">SUCCESS CHECK: Pre-Calc</span></span>
+                    <span class="text-success">Ready</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal-content help-grid-layout">
+            <button id="modal-close" class="modal-close">&times;</button>
+            <h2 id="modal-title-text" class="modal-header-main">Ayuda Artemis II / Help / Ajuda</h2>
+            
+            <div class="help-grid">
+                <div class="help-card full-width">
+                    <h3 id="help-sec-1">1. Misión y Trayectoria de Retorno Libre</h3>
+                    <p id="help-text-1">Cargando texto...</p>
+                </div>
+
+                <div class="help-card">
+                    <h3 id="help-sec-2">2. Controles de Lanzamiento</h3>
+                    <ul class="help-list" id="help-text-2">
+                        <li><span class="icon">📅</span> <div id="help-cont-1">Fecha...</div></li>
+                        <li><span class="icon">📍</span> <div id="help-cont-2">Lugar...</div></li>
+                        <li><span class="icon">⏱️</span> <div id="help-cont-3">Velocidad...</div></li>
+                        <li><span class="icon">🌍</span> <div id="help-cont-4">Perigeo...</div></li>
+                    </ul>
+                </div>
+
+                <div class="help-card-col">
+                    <div class="help-card">
+                        <h3 id="help-sec-3">3. Dinámica Orbital (CR3BP)</h3>
+                        <p id="help-text-3">Cargando...</p>
+                        <div id="math-container" class="math-equation"></div>
+                    </div>
+                </div>
+
+                <div class="help-card-col">
+                    <div class="help-card">
+                        <h3 id="help-sec-4">4. Modelo Numérico (Integrador RK4)</h3>
+                        <div id="help-text-4">
+                            <p id="help-rk4-1">Cargando...</p>
+                            <div id="math-rk4" class="math-equation" style="padding: 5px; margin: 5px 0; background: transparent;"></div>
+                            <p id="help-rk4-2">Cargando...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/katex.min.js"></script>
+    <script src="js/LanguageStore.js"></script>
+    <script src="js/PhysicsEngine.js"></script>
+    <script src="js/AppController.js"></script>
+</body>
+</html>

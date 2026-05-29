@@ -1,0 +1,249 @@
+Scientific Software Architecture & Physics Simulation
+Blueprint
+Simulación de Trayectoria de Retorno Libre: Misión Artemis II
+Asistente de Programación - Arquitecto de Software Senior
+8 de abril de 2026
+
+Índice
+1 Contexto de la Misión y Sustento Científico
+1.1 Propósito y Alcance . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+1.2 Referencias y Base Teórica . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+1
+2
+2
+
+2 Actores y Requisitos del Sistema
+
+2
+
+3 Modelo Computacional y Datos
+
+3
+
+4 Stack Tecnológico y Estándares
+
+4
+
+5 Arquitectura del Sistema
+
+4
+
+6 Flujo de Trabajo y Calidad (Agent Workflow)
+
+4
+
+7 Mockups y Diseño de Interfaz
+7.1 Mockup: Ventana Principal . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+7.2 Mockup y Contenido: Ventana de Ayuda (Modal) . . . . . . . . . . . . . . . . . . . .
+
+5
+5
+5
+
+8 Prompt Híbrido de Inicialización
+
+5
+
+Información del Documento
+- Proyecto: Simulación Interactiva de Mecánica Orbital - Artemis II.
+- Investigador/Autor: Asistente de Programación (Físico Computacional).
+- Versión: 1.0
+- Institución: Entorno de Desarrollo Asistido por IA.
+
+1
+
+Contexto de la Misión y Sustento Científico
+
+Esta sección establece la base teórica y el propósito del sistema.
+
+1
+
+1.1
+
+Propósito y Alcance
+
+Descripción del Problema: La planificación de trayectorias translunares requiere resolver el
+problema restringido de tres cuerpos (Tierra-Luna-Nave). Los modelos analíticos simples no son
+suficientes, requiriendo integración numérica para predecir si una nave escapará, colisionará
+o logrará una órbita de retorno libre (Free-Return Trajectory) como la planeada para la misión
+Artemis II.
+Objetivo Científico: Visualizar de forma interactiva la sensibilidad de las condiciones iniciales (fecha, que determina la anomalía verdadera de la Luna, velocidad y ángulo de lanzamiento)
+en la trayectoria final de la cápsula Orión, demostrando el efecto de ”asistencia gravitacional”
+lunar.
+Alcance (In-Scope):
+- Núcleo lógico de integración numérica en JS puro.
+- Modelo de datos espaciales y efemérides lunares simplificadas.
+- Visualización en Canvas 2D.
+- Interfaz UI/UX en Material Design, Multilenguaje (ES, EN, PT) y accesible.
+
+1.2
+
+Referencias y Base Teórica
+
+Bibliografía Clave:
+- Bate, R. R., Mueller, D. D., & White, J. E. (1971). Fundamentals of Astrodynamics. Dover Publications.
+- Curtis, H. D. (2013). Orbital Mechanics for Engineering Students. Butterworth-Heinemann.
+Modelo Matemático: La dinámica de la nave espacial (masa m) se rige por la ley de la gravitación universal de Newton, sujeta a los campos gravitacionales de la Tierra (ME ) y la Luna
+(ML ). La aceleración en el espacio bidimensional está dada por:
+~a = −
+
+GME
+GML
+~rE −
+~rL
+3
+|~rE |
+|~rL |3
+
+Donde ~rE y ~rL son los vectores de posición desde el centro de la Tierra y la Luna hacia la nave,
+respectivamente, y G es la constante gravitacional.
+Condiciones de Contorno:
+- G ≈ 6.67430 × 10−11 m3 kg−1 s−2
+- Radio Tierra ≈ 6371 km; Radio Luna ≈ 1737 km.
+- Distancia promedio Tierra-Luna ≈ 384, 400 km.
+- La posición angular inicial de la Luna θL (t = 0) se deriva de la Fecha de Lanzamiento
+seleccionada por el usuario.
+
+2
+
+Actores y Requisitos del Sistema
+
+Actores: Usuario/Estudiante (Opera controles y ejecuta lanzamientos), Motor Físico (Calcula trayectorias).
+Requisitos Funcionales (RF):
+2
+
+- RF1: Permitir la selección de: Fecha de lanzamiento, Velocidad inicial (v0 ), Ángulo de inyección y Altitud del perigeo.
+- RF2: Ejecutar la simulación tras presionar el botón ”Lanzar”.
+- RF3: Evaluar en tiempo real el estado de la misión: Éxito (Rodea la Luna y vuelve a interceptar la atmósfera terrestre), Fallo por colisión (Impacta la Luna/Tierra prematuramente),
+Fallo por escape (Abandona el sistema Tierra-Luna).
+- RF4: Mostrar panel de ”Ayuda” modal interactivo y soporte de internacionalización (Español, Inglés, Portugués).
+Requisitos No Funcionales (RNF):
+- RNF1: Renderizado tipográfico matemático mediante KaTeX offline.
+- RNF2: Interfaz Material Design Responsive y cumplimiento de estándares de accesibilidad
+WCAG 2.1/2.2 (alto contraste, navegación por teclado).
+- RNF3: Feedback auditivo mediante archivos de audio codificados en Base64 para eventos
+de clic y resultados de simulación.
+Justificación del Funcionamiento Offline y CORS: En ocasiones, las simulaciones web complejas fallan al ejecutarse localmente porque los navegadores modernos implementan estrictas políticas de seguridad (Same-Origin Policy). Si se intenta cargar módulos de JavaScript (type=”module”), leer archivos JSON externos (como las traducciones de la interfaz) o cargar librerías matemáticas mediante la API fetch() usando el protocolo local file://, el navegador
+bloqueará silenciosamente estas solicitudes para proteger al usuario. Para garantizar una simulación robusta e independiente de la red, requerimos la siguiente arquitectura estricta:
+RNF4 (Ejecución Local Estricta): 100% Offline (file://). El proyecto debe ejecutarse con un simple doble clic sobre el archivo index.html. Queda terminantemente
+prohibido el uso de módulos ES6 (type=”module”) y el uso de peticiones asíncronas
+(fetch(), XMLHttpRequest) para cargar recursos locales. Todas las dependencias (KaTeX local, fuentes), lógica JavaScript, diccionarios multi-idioma (como un objeto estático JS) y assets multimedia (sonidos en Base64) deben ser accesibles directamente
+en el entorno global.
+
+3
+
+Modelo Computacional y Datos
+
+Entidades de Dominio:
+- CelestialBody: Representa a la Tierra y la Luna (Masa, Radio, Posición, Velocidad orbital).
+- Spacecraft: Representa la cápsula Orión (Posición, Velocidad, Estado de Telemetría).
+- SimulationEngine: Gestor del reloj y eventos.
+Método Numérico: Integración de Runge-Kutta de 4to Orden (RK4). Se elige sobre el método de Euler porque la variación extrema del gradiente gravitacional cerca de la Luna (Efecto de
+asistencia) genera inestabilidad numérica. RK4 garantiza la conservación de la energía mecánica (Constante de Jacobi) en un margen de error aceptable con pasos de tiempo (dt) razonables.
+Gestión de Datos: Estado en memoria volátil. Las trazas históricas para dibujar la órbita en
+el canvas se almacenan en un Array finito, descartando los puntos más antiguos para evitar
+fugas de memoria (Memory Leaks).
+3
+
+4
+
+Stack Tecnológico y Estándares
+
+Tecnologías: HTML5, JavaScript (Vanilla, ES5/ES6 sin importaciones asíncronas), CSS3 (Variables
+nativas para Theming). Librerías Permitidas (Empaquetadas localmente):
+- KaTeX: Para renderizado matemático en pantalla de las condiciones iniciales.
+Reglas de Estilo:
+- CSS: Patrones Material Design (Elevaciones, Transiciones suaves, Ripple effects). Paleta oscura moderna adaptada a misiones espaciales.
+- JS: Patrón Módulo Revelador (Revealing Module Pattern) para encapsular la física y el estado de la UI sin usar ”import/export”.
+
+5
+
+Arquitectura del Sistema
+
+Estructura de aplicación monolítica en cliente (Single Page Application estática):
+- Capa de Presentación (UI/UX): Panel lateral de controles (Material Inputs, Selectores, Modales). Contenedor HTML5 <canvas> que renderiza 60 Frames Por Segundo (FPS) usando
+requestAnimationFrame.
+- Capa de Aplicación: Coordinador de flujo. Administra el diccionario de idiomas, reproduce
+los sonidos (API Audio de HTML5 con buffers pre-cargados) y gestiona los modales (Help
+Modal).
+- Capa de Dominio (Motor Físico): PhysicsEngine. Contiene el bucle tick(), el integrador
+RK4 y el sistema de detección de colisiones espaciales (verificación de radios planetarios
+vs coordenadas nave).
+
+6
+
+Flujo de Trabajo y Calidad (Agent Workflow)
+
+Checkpoint 1 (Ciencia): Validación de que la órbita lunar esté sincronizada correctamente con
+la entrada de ”Fecha de Lanzamiento” (usando un modelo orbital circular simplificado como
+aproximación de primer orden). Checkpoint 2 (Arquitectura): Verificación estricta de ausencia
+de CORS. Todas las etiquetas <script> y recursos deben ser locales. Checkpoint 3 (QA): Test
+de trayectoria de ”Retorno Libre” nominal para asegurar que la nave regresa a rT ierra < 120 km
+tras superar a la Luna.
+Definition of Done (DoD) Técnico y Funcional:
+ Interfaz responsiva y operativa en resoluciones desktop y tablet.
+ Soporte Multi-idioma (ES, EN, PT) cambiable en tiempo real sin recargar página.
+ Modal de Ayuda completo, navegable con teclado y lector de pantalla (ARIA attributes).
+ Botones emiten retroalimentación sonora al interactuar.
+Definition of Done del Modelo Matemático:
+ RK4 implementado correctamente para resolver las EDO del problema de 3 cuerpos.
+ Detección precisa de los 3 estados finales (Éxito, Crash, Escape).
+ Fórmulas clave renderizadas elegantemente usando KaTeX en el panel informativo.
+4
+
+7
+
+Mockups y Diseño de Interfaz
+
+7.1
+
+Mockup: Ventana Principal
+
+[Mockup Visual de la Simulación Artemis II]
+Aquí se integra el diseño aportado: Visor estelar oscuro a la izquierda con Tierra, Luna y
+trayectorias. Panel lateral derecho ”Artemis II Launch Parameters” con campos para
+Fecha, Velocidad, Ángulo y botón LANZAR azul Material Design. (La imagen se
+incrustará vía Base64 en el desarrollo HTML real).
+
+Figura 1: Estructura principal de la Interfaz de Usuario y Canvas de simulación.
+
+7.2
+
+Mockup y Contenido: Ventana de Ayuda (Modal)
+
+Al presionar el botón de ”Ayuda”, se desplegará una ventana modal oscura, translúcida estilo
+glassmorphism, que contendrá la siguiente estructura tabulada (traducida dinámicamente):
+- 1. Introducción al Fenómeno: ”Esta simulación modela una trayectoria de retorno libre
+cislunar. Demuestra cómo, ajustando con precisión la fecha (posición lunar), la velocidad y
+el ángulo en la inyección translunar (TLI), la gravedad de la Luna puede capturar a la nave
+Orión y redirigirla de vuelta a la Tierra sin necesidad de quemar combustible adicional, tal
+como está previsto para Artemis II.”
+- 2. Controles de Vuelo: Explicación de los selectores (Fecha, v0 , Ángulo, Perigeo) y cómo
+cada uno altera la conservación del momento angular y la energía de la nave.
+- 3. Lectura de la Gráfica: Detalle de los elementos visuales: La línea de trayectoria pasada,
+la proyección teórica de éxito, y los marcadores de posición de los cuerpos celestes en el
+canvas.
+- 4. Resultados de Misión: Explicación de los escenarios de terminación (Retorno Libre Exitoso vs. Colisión vs. Escape al espacio profundo).
+
+8
+
+Prompt Híbrido de Inicialización
+
+Usa este prompt para configurar a la IA antes de empezar la programación del código HTML/JS:
+”Actúa como un Arquitecto de Software Senior y Experto en Física Computacional. He
+preparado un Blueprint detallado para una simulación científica de la misión Artemis
+5
+
+II. Tu prioridad es la integridad arquitectónica del sistema, la estabilidad numérica del integrador RK4 y garantizar un entorno 100% offline (RNF4). Analiza cada
+sección del documento, valida las ecuaciones de gravitación de la Sección 1.2, los
+métodos numéricos de la Sección 3 y la estructura de capas de la Sección 5. Realiza
+una verificación de acuerdo a la Sección 6 y confirma que el proyecto cumpla con el
+aspecto planteado en los Mockups de la Sección 7 y contenga el modal de ayuda y el
+sistema multilenguaje. Espera mi confirmación antes de generar el código fuente
+HTML/JS unificado; no implementes módulos completos sin validar primero el diseño
+del sistema y el sustento científico. ¿Entendido?”
+
+6
+
+
