@@ -1,106 +1,1104 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listado de Simulaciones</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-</head>
+    <title>La Física de la Música | Presentación</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;1,300&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- MathJax para las fórmulas -->
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-<body class="index-body">
-
-    <header class="index-header">
-        <h1 class="index-h1">Listado de Simulaciones de Física</h1>
-        <p>A. Álvarez</p>
-    </header>
-
-
-    <div class="menu-container">
-        <a href="01_caidaLibre.html" class="sim-card">
-            <div class="icon-circle">🍎</div>
-            <h2>Caída Libre</h2>
-            <p>Explora cómo la gravedad afecta a los objetos en diferentes planetas sin resistencia del aire.</p>
-        </a>
-
-        <a href="02_movimientoProyectil.html" class="sim-card">
-            <div class="icon-circle">🚀</div>
-            <h2>Movimiento Parabólico</h2>
-            <p>Calcula trayectorias, alcances y alturas máximas ajustando ángulos, velocidad inicial y masa.</p>
-        </a>
-
-        <a href="03_leyHooke.html" class="sim-card">
-            <div class="icon-circle">〰️</div>
-            <h2>Ley de Hooke</h2>
-            <p>Simulación interactiva de la Ley de Hooke y Movimiento Armónico Simple.</p>
-        </a>
-
-        <a href="04_desarrollosBicicleta.html" class="sim-card">
-            <div class="icon-circle">🚲</div>
-            <h2>Cinemática de la Bicicleta</h2>
-            <p>Analiza la relación de transmisión, desarrollos y velocidad en una bicicleta.</p>
-        </a>
-
-        <a href="05_maquinaVapor.html" class="sim-card">
-            <div class="icon-circle">🚂</div>
-            <h2>Máquina de Vapor</h2>
-            <p>Simulador de ciclo de vapor idealizado con análisis de eficiencia de Carnot.</p>
-        </a>
-
-        <a href="06_hidroelectrica.html" class="sim-card">
-            <div class="icon-circle">⚡</div>
-            <h2>Energía Hidroeléctrica</h2>
-            <p>Simulación de una central hidroeléctrica, análisis de potencia, caudal y eficiencia.</p>
-        </a>
-
-        <a href="Artemis/index.html" class="sim-card">
-            <div class="icon-circle">🛰️</div>
-            <h2>Misión Artemis II</h2>
-            <p>Simulador de trayectoria de retorno libre orbital y dinámica orbital de la misión lunar Artemis II.</p>
-        </a>
-    </div>
-
-    <div class="footer-text">Plataforma Educativa v1.0</div>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <script>
-        // --- MOTOR DE AUDIO (Accesibilidad y Feedback) ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                    colors: {
+                        physics: '#10b981', // Emerald
+                        music: '#f59e0b',   // Amber
+                    }
+                }
+            }
+        }
+    </script>
 
-        function playSound(freq, type, duration, vol) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-
-            oscillator.type = type;
-            oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + duration);
+    <style>
+        body {
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            overflow: hidden; /* Evitar scroll global en body */
         }
 
-        // Asignar eventos a las tarjetas
-        document.querySelectorAll('.sim-card').forEach(card => {
-            // Sonido al pasar el cursor (Hover)
-            card.addEventListener('mouseenter', () => {
-                playSound(440, 'sine', 0.1, 0.05); // La natural suave
+        /* Fondo animado sutil */
+        .bg-animated {
+            background: radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.08), transparent 25%),
+                        radial-gradient(circle at 85% 30%, rgba(245, 158, 11, 0.08), transparent 25%);
+            background-size: 100% 100%;
+            animation: pulseBackground 15s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseBackground {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        /* Estilos de las diapositivas responsivas */
+        .slide {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.98);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Para permitir scroll correcto en móviles */
+            justify-content: flex-start;
+            padding: 4rem 1rem 6rem 1rem; /* Espacio superior e inferior para controles */
+            overflow-y: auto; /* Permite hacer scroll en celulares si es muy alto */
+            overflow-x: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .slide {
+                align-items: center; /* Centrar en pantallas grandes */
+                padding: 2rem;
+            }
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            z-index: 10;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            margin: auto; /* Centra la tarjeta si sobra espacio, o permite scroll si falta */
+        }
+
+        /* Fórmulas MathJax adaptativas */
+        .math-display {
+            font-size: 1.1rem;
+            margin: 1rem 0;
+            color: #34d399; /* Emerald 400 */
+            overflow-x: auto; /* Scroll horizontal solo para la fórmula si es muy larga */
+            overflow-y: hidden;
+            padding-bottom: 0.25rem;
+        }
+        
+        @media (min-width: 768px) {
+            .math-display {
+                font-size: 1.5rem;
+                margin: 1.5rem 0;
+                overflow-x: visible;
+            }
+        }
+        
+        .math-display.music-color {
+            color: #fbbf24; /* Amber 400 */
+        }
+
+        /* Estilos del Cuestionario */
+        .quiz-option {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left-width: 4px;
+            border-left-color: transparent;
+        }
+        .quiz-option:hover {
+            background-color: rgba(30, 41, 59, 0.9);
+            border-left-color: #38bdf8;
+        }
+        .quiz-option.selected {
+            background-color: rgba(15, 23, 42, 0.9);
+            border-left-color: #38bdf8;
+        }
+        .quiz-option.correct {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-left-color: #10b981;
+        }
+        .quiz-option.incorrect {
+            background-color: rgba(239, 68, 68, 0.2);
+            border-left-color: #ef4444;
+        }
+        .rationale-box {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+        .rationale-box.visible {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estilos para la tabla */
+        .results-table th, .results-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            text-align: left;
+        }
+        .results-table th {
+            background-color: rgba(15, 23, 42, 0.6);
+            font-weight: 600;
+            color: #e2e8f0;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        .results-table tr:hover {
+            background-color: rgba(30, 41, 59, 0.4);
+        }
+        .row-pisar td {
+            color: #a7f3d0; /* emerald-200 */
+        }
+        .row-rozar td {
+            color: #fde68a; /* emerald-200 */
+        }
+    </style>
+</head>
+<body class="bg-animated w-screen h-screen relative flex flex-col font-sans antialiased selection:bg-physics selection:text-white">
+
+    <!-- Barra de progreso superior -->
+    <div class="absolute top-0 left-0 w-full h-1.5 bg-slate-800 z-50">
+        <div id="progress-bar" class="h-full bg-gradient-to-r from-physics to-music w-0 transition-all duration-500 ease-out"></div>
+    </div>
+
+    <!-- Contenedor Principal de Diapositivas -->
+    <main id="slides-container" class="relative flex-1 w-full max-w-6xl mx-auto h-full overflow-hidden">
+        
+        <!-- Diapositiva 1 -->
+        <section class="slide active">
+            <div class="glass-card p-8 md:p-20 rounded-3xl max-w-4xl w-full text-center">
+                <div class="mb-4 md:mb-6 flex justify-center space-x-4 text-physics">
+                    <i data-lucide="waves" class="w-10 h-10 md:w-12 md:h-12"></i>
+                    <i data-lucide="music" class="w-10 h-10 md:w-12 md:h-12 text-music"></i>
+                </div>
+                <h1 class="text-3xl md:text-6xl font-serif font-bold mb-4 md:mb-6 leading-tight">La Física de la Música</h1>
+                <h2 class="text-lg md:text-3xl text-slate-300 font-light mb-8 md:mb-12">Ondas Estacionarias, Armónicos y la Escala Musical</h2>
+                <div class="border-t border-slate-700 pt-6 mt-6 md:pt-8 md:mt-8 flex flex-col md:block items-center">
+                    <p class="text-xs md:text-sm uppercase tracking-widest text-slate-400 mb-2">Autores</p>
+                    <p class="font-medium text-sm md:text-lg text-slate-200">
+                        Carlos Arturo Álvarez <span class="hidden md:inline mx-2 text-slate-600">|</span><span class="md:hidden block h-1"></span>
+                        Emmanuel Román <span class="hidden md:inline mx-2 text-slate-600">|</span><span class="md:hidden block h-1"></span>
+                        Eric Hernández
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diapositiva 2 -->
+        <section class="slide">
+            <div class="glass-card p-6 md:p-16 rounded-3xl max-w-5xl w-full">
+                <h2 class="text-2xl md:text-4xl font-serif font-bold text-physics mb-6 md:mb-8 flex items-center">
+                    <i data-lucide="activity" class="mr-3 md:mr-4 w-6 h-6 md:w-8 md:h-8"></i> Fundamento Teórico: Ondas Estacionarias
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 items-center">
+                    <div>
+                        <ul class="space-y-4 md:space-y-6 text-base md:text-xl text-slate-300 leading-relaxed">
+                            <li class="flex items-start">
+                                <i data-lucide="check-circle-2" class="mr-3 w-5 h-5 md:w-6 md:h-6 text-physics shrink-0 mt-1"></i> 
+                                <span>Una cuerda sujeta en ambos extremos vibra por la superposición de ondas incidentes y reflejadas.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i data-lucide="check-circle-2" class="mr-3 w-5 h-5 md:w-6 md:h-6 text-physics shrink-0 mt-1"></i> 
+                                <span>Se forman puntos sin movimiento (<strong class="text-white">Nodos</strong>) y puntos de máxima oscilación (<strong class="text-white">Vientres</strong>).</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i data-lucide="check-circle-2" class="mr-3 w-5 h-5 md:w-6 md:h-6 text-physics shrink-0 mt-1"></i> 
+                                <span>La velocidad de propagación ($v$) depende de la tensión ($T$) y la densidad lineal de masa ($\mu$).</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-900/50 p-6 md:p-8 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-center overflow-x-auto w-full">
+                        <p class="text-xs md:text-sm text-slate-400 uppercase tracking-wider mb-2 md:mb-4 whitespace-nowrap">Ecuación de Taylor</p>
+                        <div class="math-display">$$v = \sqrt{\frac{T}{\mu}}$$</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diapositiva 3 -->
+        <section class="slide">
+            <div class="glass-card p-6 md:p-16 rounded-3xl max-w-4xl w-full text-center">
+                <h2 class="text-2xl md:text-4xl font-serif font-bold text-physics mb-6 md:mb-8">La Ecuación de la Frecuencia</h2>
+                <p class="text-base md:text-xl text-slate-300 mb-6 md:mb-8">Dado que para el modo fundamental la longitud de onda es $\lambda = 2L$, la frecuencia de cualquier armónico $n$ es:</p>
+                
+                <div class="bg-slate-900/80 py-6 px-4 md:py-8 md:px-12 rounded-2xl border-l-4 border-physics inline-block mb-8 md:mb-10 w-full md:w-auto">
+                    <div class="math-display">$$f_n = \frac{n}{2L} \sqrt{\frac{T}{\mu}}$$</div>
+                </div>
+
+                <div class="bg-emerald-900/20 border border-emerald-800/50 p-4 md:p-6 rounded-xl text-left flex gap-3 md:gap-4 items-start">
+                    <i data-lucide="lightbulb" class="w-6 h-6 md:w-8 md:h-8 text-physics shrink-0"></i>
+                    <p class="text-sm md:text-lg"><strong class="text-white">Deducción clave:</strong> La frecuencia ($f$) es <em>inversamente proporcional</em> a la longitud vibrante de la cuerda ($L$). Si alteramos la longitud física, alteramos inevitablemente la nota musical resultante.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diapositiva 4 -->
+        <section class="slide">
+            <div class="glass-card p-6 md:p-16 rounded-3xl max-w-5xl w-full">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+                    <div>
+                        <h2 class="text-2xl md:text-4xl font-serif font-bold text-music mb-4 md:mb-8">Pitágoras (500 a.C.)</h2>
+                        <h3 class="text-lg md:text-xl text-slate-400 font-light mb-4 md:mb-6">La Aritmética Musical</h3>
+                        <ul class="space-y-4 md:space-y-6 text-base md:text-lg text-slate-300">
+                            <li class="flex"><span class="mr-2">•</span><span>Demostró que el sonido no es un fenómeno místico, sino gobernado por relaciones numéricas.</span></li>
+                            <li class="flex"><span class="mr-2">•</span><span>Utilizó un <strong>Monocordio</strong> (instrumento de una cuerda con puente móvil).</span></li>
+                        </ul>
+                        <div class="mt-6 md:mt-8 p-4 md:p-5 bg-amber-900/20 border-l-4 border-music rounded-r-xl">
+                            <p class="text-sm md:text-lg"><strong class="text-white">El gran descubrimiento:</strong> Los intervalos musicales consonantes al oído humano corresponden a fracciones de números enteros pequeños.</p>
+                        </div>
+                    </div>
+                    <div class="aspect-square md:aspect-auto h-48 md:h-auto md:min-h-[300px] bg-slate-800 rounded-2xl border border-slate-700 flex flex-col items-center justify-center text-slate-500 overflow-hidden relative w-full">
+                        <div class="w-full h-1 bg-slate-600 absolute top-1/2 -translate-y-1/2"></div>
+                        <div class="w-3 md:w-4 h-10 md:h-12 bg-music absolute top-1/2 -translate-y-1/2 left-1/3 rounded-sm shadow-lg"></div>
+                        <i data-lucide="ruler" class="w-10 h-10 md:w-16 md:h-16 mb-2 md:mb-4 opacity-50 z-10"></i>
+                        <p class="z-10 text-xs md:text-sm font-medium text-center px-4">Modelo Conceptual<br>del Monocordio</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diapositiva 5 (OSCILOSCOPIOS SVG RESPONSIVOS) -->
+        <section class="slide">
+            <div class="glass-card p-6 md:p-12 rounded-3xl max-w-5xl w-full">
+                <h2 class="text-2xl md:text-3xl font-serif font-bold text-music mb-4 md:mb-6 text-center">Los Intervalos Musicales Justos</h2>
+                <p class="text-sm md:text-base text-center text-slate-300 mb-6 md:mb-8">Superposición de la Fundamental (Verde) con el Intervalo correspondiente en el osciloscopio temporal.</p>
+                
+                <div class="space-y-4">
+                    <!-- Octava -->
+                    <div class="flex flex-col md:flex-row items-center p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                        <div class="flex flex-col md:flex-row items-center justify-center md:justify-start w-full md:w-5/12 mb-4 md:mb-0 text-center md:text-left">
+                            <div class="text-xl md:text-2xl font-bold text-white w-16 text-center">2:1</div>
+                            <div class="h-px w-full md:h-10 md:w-px bg-slate-600 my-2 md:my-0 md:mx-4"></div>
+                            <div>
+                                <h4 class="text-base md:text-lg font-bold text-music">La Octava ($f_2$)</h4>
+                                <p class="text-xs md:text-sm text-slate-300">Longitud $L/2$. La frecuencia se <strong>duplica</strong>.</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-7/12 flex flex-col items-center">
+                            <svg id="svg-octava" class="w-full h-16 md:h-20" viewBox="0 0 400 80"></svg>
+                            <span class="text-[10px] md:text-xs text-slate-400 mt-1 text-center">Fundamental vs Octava (Nodos coincidentes en centro y extremos)</span>
+                        </div>
+                    </div>
+                    <!-- Quinta -->
+                    <div class="flex flex-col md:flex-row items-center p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                        <div class="flex flex-col md:flex-row items-center justify-center md:justify-start w-full md:w-5/12 mb-4 md:mb-0 text-center md:text-left">
+                            <div class="text-xl md:text-2xl font-bold text-white w-16 text-center">3:2</div>
+                            <div class="h-px w-full md:h-10 md:w-px bg-slate-600 my-2 md:my-0 md:mx-4"></div>
+                            <div>
+                                <h4 class="text-base md:text-lg font-bold text-music">La Quinta Justa</h4>
+                                <p class="text-xs md:text-sm text-slate-300">Longitud $2/3 L$. Frecuencia x <strong>1.5</strong>.</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-7/12 flex flex-col items-center">
+                            <svg id="svg-quinta" class="w-full h-16 md:h-20" viewBox="0 0 400 80"></svg>
+                            <span class="text-[10px] md:text-xs text-slate-400 mt-1 text-center">3 ciclos de Quinta equivalen a 2 de Fundamental</span>
+                        </div>
+                    </div>
+                    <!-- Cuarta -->
+                    <div class="flex flex-col md:flex-row items-center p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                        <div class="flex flex-col md:flex-row items-center justify-center md:justify-start w-full md:w-5/12 mb-4 md:mb-0 text-center md:text-left">
+                            <div class="text-xl md:text-2xl font-bold text-white w-16 text-center">4:3</div>
+                            <div class="h-px w-full md:h-10 md:w-px bg-slate-600 my-2 md:my-0 md:mx-4"></div>
+                            <div>
+                                <h4 class="text-base md:text-lg font-bold text-music">La Cuarta Justa</h4>
+                                <p class="text-xs md:text-sm text-slate-300">Longitud $3/4 L$. Frecuencia x <strong>1.33</strong>.</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-7/12 flex flex-col items-center">
+                            <svg id="svg-cuarta" class="w-full h-16 md:h-20" viewBox="0 0 400 80"></svg>
+                            <span class="text-[10px] md:text-xs text-slate-400 mt-1 text-center">4 ciclos de Cuarta equivalen a 3 de Fundamental</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diapositiva 6 -->
+        <section class="slide">
+            <div class="glass-card p-6 md:p-16 rounded-3xl max-w-4xl w-full text-center">
+                <h2 class="text-2xl md:text-4xl font-serif font-bold text-red-400 mb-2 md:mb-4">La Coma Pitagórica</h2>
+                <h3 class="text-sm md:text-xl text-slate-300 mb-6 md:mb-10">El Choque de Dos Mundos Matemáticos</h3>
+
+                <p class="text-base md:text-lg text-slate-200 mb-6 md:mb-8 max-w-2xl mx-auto">El objetivo era construir una escala circular perfecta subiendo por Quintas (x1.5) hasta coincidir con las Octavas (x2). Pero las potencias jamás se igualan:</p>
+
+                <div class="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8 mb-8 md:mb-10 w-full">
+                    <div class="bg-slate-800 p-4 md:p-6 rounded-2xl border border-slate-700 w-full md:w-auto">
+                        <p class="text-slate-300 text-xs md:text-sm mb-2 uppercase">12 Quintas</p>
+                        <div class="math-display music-color !my-0">$$1.5^{12} = 129.746$$</div>
+                    </div>
+                    <div class="text-2xl md:text-4xl font-bold text-red-500">$\neq$</div>
+                    <div class="bg-slate-800 p-4 md:p-6 rounded-2xl border border-slate-700 w-full md:w-auto">
+                        <p class="text-slate-300 text-xs md:text-sm mb-2 uppercase">7 Octavas</p>
+                        <div class="math-display music-color !my-0">$$2^7 = 128$$</div>
+                    </div>
+                </div>
+
+                <div class="bg-red-900/20 border border-red-800/50 p-4 md:p-6 rounded-xl text-left inline-block w-full md:w-auto">
+                    <p class="text-sm md:text-lg text-red-200"><strong>El resultado:</strong> Esta discrepancia acumulada creaba <em>"La Quinta del Lobo"</em>, un intervalo que sonaba horriblemente desafinado al modular de tonalidad.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diapositiva 7 -->
+        <section class="slide">
+            <div class="glass-card p-6 md:p-16 rounded-3xl max-w-4xl w-full text-center">
+                <h2 class="text-2xl md:text-4xl font-serif font-bold text-white mb-4 md:mb-6">El Temperamento Igual <span class="text-sm md:text-xl text-slate-300 block mt-1 md:mt-2">(Siglo XVIII)</span></h2>
+                
+                <p class="text-base md:text-xl text-slate-200 mb-6 md:mb-8 leading-relaxed">El sistema de compromiso: Se reparte el error matemático de forma equitativa entre los 12 semitonos de la octava para permitir la modulación armónica.</p>
+                
+                <div class="bg-slate-900/80 py-6 px-4 md:py-8 md:px-12 rounded-2xl border-t-4 border-b-4 border-slate-500 inline-block mb-8 md:mb-10 shadow-2xl w-full md:w-auto overflow-x-auto">
+                    <p class="text-xs md:text-sm text-slate-300 uppercase tracking-wider mb-2 md:mb-4 whitespace-nowrap">Factor de Incremento Constante</p>
+                    <div class="math-display text-white">$$\text{Factor} = \sqrt[12]{2} \approx 1.059463$$</div>
+                </div>
+
+                <p class="text-sm md:text-lg text-slate-300 max-w-2xl mx-auto">Sacrificamos la pureza absoluta de las fracciones naturales a cambio de viabilidad acústica. <br><span class="text-xs md:text-sm mt-2 block text-slate-400">(Ej: La Quinta pasa del $1.5000$ puro a $1.4983$).</span></p>
+            </div>
+        </section>
+
+        <!-- Diapositiva 8 -->
+        <section class="slide">
+            <div class="glass-card p-6 md:p-16 rounded-3xl max-w-6xl w-full">
+                <h2 class="text-2xl md:text-4xl font-serif font-bold text-physics mb-6 md:mb-8 flex items-center">
+                    <i data-lucide="flask-conical" class="mr-3 md:mr-4 w-6 h-6 md:w-8 md:h-8"></i> El Montaje Experimental
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+                    <div class="space-y-4 md:space-y-6 flex flex-col justify-center">
+                        <div class="bg-slate-800/50 p-4 md:p-5 rounded-xl border border-slate-700 flex items-start gap-3 md:gap-4">
+                            <i data-lucide="settings" class="w-5 h-5 md:w-6 md:h-6 text-physics mt-1 shrink-0"></i>
+                            <div>
+                                <h4 class="font-bold text-sm md:text-base text-white">Construcción y Calibración</h4>
+                                <p class="text-xs md:text-sm text-slate-300">Base de madera, armellas, puentes de balsa y cuerda calibrada mediante análisis espectral por FFT ($f_1 \approx 329.6\text{ Hz}$).</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 md:p-5 rounded-xl border border-slate-700 flex items-start gap-3 md:gap-4">
+                            <i data-lucide="ruler" class="w-5 h-5 md:w-6 md:h-6 text-physics mt-1 shrink-0"></i>
+                            <div>
+                                <h4 class="font-bold text-sm md:text-base text-white">Precisión Métrica ($L=34\text{cm}$)</h4>
+                                <p class="text-xs md:text-sm text-slate-300">Puntos de fraccionamiento ($L/2, L/3, L/4$) rigurosamente establecidos para validar el modelo teórico.</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 md:p-5 rounded-xl border border-slate-700 flex items-start gap-3 md:gap-4">
+                            <i data-lucide="check-square" class="w-5 h-5 md:w-6 md:h-6 text-emerald-500 mt-1 shrink-0"></i>
+                            <div>
+                                <h4 class="font-bold text-sm md:text-base text-white">Robustez del Modelo</h4>
+                                <p class="text-xs md:text-sm text-slate-300">Herramienta de bajo costo pero con alta capacidad demostrativa y precisión analítica.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Galería de imágenes cargadas -->
+                    <div class="flex flex-col gap-4">
+                        <div class="group rounded-2xl overflow-hidden border border-slate-700 shadow-lg flex flex-col w-full bg-slate-900/60">
+                            <div class="relative h-40 md:h-56 w-full flex items-center justify-center p-3">
+                                <img src="image_cad2ab.jpg" alt="Materiales del Monocordio" class="max-w-full max-h-full object-contain opacity-95 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100">
+                            </div>
+                            <div class="bg-slate-900/95 p-2 md:p-3 border-t border-slate-700 text-center text-xs md:text-sm font-medium text-slate-200 z-10">
+                                Materiales de Construcción
+                            </div>
+                        </div>
+                        <div class="group rounded-2xl overflow-hidden border border-slate-700 shadow-lg flex flex-col w-full bg-slate-900/60">
+                            <div class="relative h-40 md:h-56 w-full flex items-center justify-center p-3">
+                                <img src="image_cad285.jpg" alt="Monocordio Ensamblado" class="max-w-full max-h-full object-contain opacity-95 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100">
+                            </div>
+                            <div class="bg-slate-900/95 p-2 md:p-3 border-t border-slate-700 text-center text-xs md:text-sm font-medium text-slate-200 z-10">
+                                Monocordio Experimental Ensamblado
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diapositiva 9: Tabla de Resultados -->
+        <section class="slide">
+            <div class="glass-card p-6 md:p-12 rounded-3xl max-w-6xl w-full flex flex-col h-full md:h-auto max-h-[85vh]">
+                <h2 class="text-2xl md:text-3xl font-serif font-bold text-center text-white mb-2 shrink-0">Tabla de Resultados Esperados</h2>
+                <p class="text-center text-slate-400 text-sm md:text-base mb-6 shrink-0">Valores para una Frecuencia Fundamental Teórica de $329.6\text{ Hz} (E_4)$ y $L=34\text{cm}$</p>
+
+                <div class="flex-1 overflow-auto rounded-xl border border-slate-700 bg-slate-900/50">
+                    <table class="w-full text-sm md:text-base results-table whitespace-nowrap md:whitespace-normal">
+                        <thead>
+                            <tr>
+                                <th>Marca</th>
+                                <th>Operación</th>
+                                <th>Long. Efectiva ($L'$)</th>
+                                <th>Frec. Teórica ($f$)</th>
+                                <th>Nota</th>
+                                <th>Intervalo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Fundamental -->
+                            <tr class="text-slate-300">
+                                <td class="font-semibold text-white">Al Aire</td>
+                                <td>Ninguna</td>
+                                <td>34.0 cm</td>
+                                <td class="font-bold text-white">329.6 Hz</td>
+                                <td>Mi ($E_4$)</td>
+                                <td>Fundamental (1:1)</td>
+                            </tr>
+                            
+                            <!-- Sección PISAR (Acortamiento Físico) -->
+                            <tr>
+                                <td colspan="6" class="bg-emerald-900/30 text-emerald-400 text-xs uppercase tracking-wider font-bold py-2 px-4 border-y border-emerald-800/50">
+                                    Fase 1: Pisar (Acortamiento Físico)
+                                </td>
+                            </tr>
+                            <tr class="row-pisar">
+                                <td class="font-semibold text-white">Marca $L/2$</td>
+                                <td>Pisar (Puente)</td>
+                                <td>17.0 cm</td>
+                                <td class="font-bold">659.2 Hz</td>
+                                <td>Mi ($E_5$)</td>
+                                <td>Octava Justa (2:1)</td>
+                            </tr>
+                            <tr class="row-pisar">
+                                <td class="font-semibold text-white">Marca $L/3$</td>
+                                <td>Pisar (Puente)</td>
+                                <td>22.7 cm</td>
+                                <td class="font-bold">494.4 Hz</td>
+                                <td>Si ($B_4$)</td>
+                                <td>Quinta Justa (3:2)</td>
+                            </tr>
+                            <tr class="row-pisar">
+                                <td class="font-semibold text-white">Marca $L/4$</td>
+                                <td>Pisar (Puente)</td>
+                                <td>25.5 cm</td>
+                                <td class="font-bold">439.5 Hz</td>
+                                <td>La ($A_4$)</td>
+                                <td>Cuarta Justa (4:3)</td>
+                            </tr>
+
+                            <!-- Sección ROZAR (Excitación Nodal) -->
+                            <tr>
+                                <td colspan="6" class="bg-amber-900/30 text-amber-400 text-xs uppercase tracking-wider font-bold py-2 px-4 border-y border-amber-800/50">
+                                    Fase 2: Rozar (Excitación Nodal)
+                                </td>
+                            </tr>
+                            <tr class="row-rozar">
+                                <td class="font-semibold text-white">Marca $L/2$</td>
+                                <td>Rozar (Armónico)</td>
+                                <td>34.0 cm</td>
+                                <td class="font-bold">659.2 Hz</td>
+                                <td>Mi ($E_5$)</td>
+                                <td>Octava Justa (2:1)</td>
+                            </tr>
+                            <tr class="row-rozar">
+                                <td class="font-semibold text-white">Marca $L/3$</td>
+                                <td>Rozar (Armónico)</td>
+                                <td>34.0 cm</td>
+                                <td class="font-bold">988.8 Hz</td>
+                                <td>Si ($B_5$)</td>
+                                <td>Doceava Justa (3:1)</td>
+                            </tr>
+                            <tr class="row-rozar">
+                                <td class="font-semibold text-white">Marca $L/4$</td>
+                                <td>Rozar (Armónico)</td>
+                                <td>34.0 cm</td>
+                                <td class="font-bold">1318.4 Hz</td>
+                                <td>Mi ($E_6$)</td>
+                                <td>Doble Octava (4:1)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-xs text-slate-500 mt-4 text-center shrink-0"><i data-lucide="info" class="inline w-4 h-4 mr-1 -mt-0.5"></i> Nota: El error experimental se calculará comparando estos valores teóricos con las mediciones de la app.</p>
+            </div>
+        </section>
+
+        <!-- Diapositiva 10 -->
+        <section class="slide">
+            <div class="glass-card p-6 md:p-12 rounded-3xl max-w-6xl w-full">
+                <h2 class="text-2xl md:text-4xl font-serif font-bold text-center text-white mb-2">Modificación de Condiciones de Contorno</h2>
+                <p class="text-center text-sm md:text-lg text-slate-400 mb-6 md:mb-8">Contraste físico en la marca de $L/3$</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                    <!-- Pisar -->
+                    <div class="bg-slate-800/80 p-6 md:p-8 rounded-2xl border-t-4 border-physics flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold text-physics mb-4 md:mb-6 text-center">1. "PISAR" <span class="text-sm md:text-base font-normal text-slate-300 block mt-1">(Acortamiento Físico)</span></h3>
+                            <ul class="space-y-3 md:space-y-4 text-slate-200 text-sm md:text-lg mb-6">
+                                <li class="flex"><span class="mr-2">•</span><span>El puente actúa como un extremo fijo rígido.</span></li>
+                                <li class="flex"><span class="mr-2">•</span><span>La cuerda vibrante se acorta físicamente a $L' = \frac{2}{3}L$.</span></li>
+                                <li class="flex"><span class="mr-2">•</span><span>Se altera la frecuencia base del sistema.</span></li>
+                            </ul>
+                        </div>
+                        <div class="bg-slate-900 p-3 md:p-4 rounded-xl text-center mt-auto">
+                            <p class="text-xs md:text-sm text-slate-400 uppercase">Frecuencia Resultante</p>
+                            <p class="text-lg md:text-2xl font-bold text-white">$\approx 494.4 \text{ Hz}$ <span class="text-sm md:text-lg text-physics font-normal ml-1 md:ml-2">(Quinta Justa)</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Rozar -->
+                    <div class="bg-slate-800/80 p-6 md:p-8 rounded-2xl border-t-4 border-music flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold text-music mb-4 md:mb-6 text-center">2. "ROZAR" <span class="text-sm md:text-base font-normal text-slate-300 block mt-1">(Excitación Nodal)</span></h3>
+                            <ul class="space-y-3 md:space-y-4 text-slate-200 text-sm md:text-lg mb-6">
+                                <li class="flex"><span class="mr-2">•</span><span>La longitud total ($L=34 \text{ cm}$) <strong>no cambia</strong>.</span></li>
+                                <li class="flex"><span class="mr-2">•</span><span>Se induce un <em>nodo</em> en la onda, aislando el modo superior de vibración ($n=3$).</span></li>
+                                <li class="flex"><span class="mr-2">•</span><span>La fundamental se anula.</span></li>
+                            </ul>
+                        </div>
+                        <div class="bg-slate-900 p-3 md:p-4 rounded-xl text-center mt-auto">
+                            <p class="text-xs md:text-sm text-slate-400 uppercase">Frecuencia Resultante</p>
+                            <p class="text-lg md:text-2xl font-bold text-white">$\approx 988.8 \text{ Hz}$ <span class="text-sm md:text-lg text-music font-normal ml-1 md:ml-2">(Doceava Justa)</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diapositiva 11 -->
+        <section class="slide">
+            <div class="glass-card p-6 md:p-16 rounded-3xl max-w-4xl w-full">
+                <h2 class="text-2xl md:text-4xl font-serif font-bold text-white mb-2 md:mb-4">Discusión de Condiciones de Frontera</h2>
+                <h3 class="text-sm md:text-xl text-emerald-400 mb-6 md:mb-8">Validación del Modelo frente a Entornos Reales</h3>
+                
+                <p class="text-base md:text-lg text-slate-200 mb-6 md:mb-8">La evaluación experimental evidenció una <strong>notable concordancia con los modelos teóricos</strong>, presentando márgenes de error sistemáticamente inferiores al 1%.</p>
+
+                <div class="space-y-4 md:space-y-6 mb-8 md:mb-10">
+                    <div class="flex gap-3 md:gap-4 items-start">
+                        <div class="bg-slate-800 p-2 md:p-3 rounded-full shrink-0"><i data-lucide="scan-line" class="w-5 h-5 md:w-6 md:h-6 text-slate-300"></i></div>
+                        <div>
+                            <h4 class="text-base md:text-xl font-bold text-white">Incertidumbre Longitudinal</h4>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">El ancho plano del puente de balsa ($0.8 \text{ cm}$) introduce una leve incertidumbre en la longitud vibrante, explicando las pequeñas discrepancias frecuenciales.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 md:gap-4 items-start">
+                        <div class="bg-slate-800 p-2 md:p-3 rounded-full shrink-0"><i data-lucide="waves" class="w-5 h-5 md:w-6 md:h-6 text-slate-300"></i></div>
+                        <div>
+                            <h4 class="text-base md:text-xl font-bold text-white">Amortiguamiento Acústico</h4>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">Los apoyos planos generan ligeras pérdidas de energía por fricción frente al modelo ideal de contactos sin dimensiones.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-indigo-900/30 border border-indigo-500/30 p-4 md:p-6 rounded-xl text-center">
+                    <p class="text-sm md:text-lg font-medium text-indigo-200"><i data-lucide="microscope" class="inline w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 -mt-1"></i><strong>Conclusión Pedagógica:</strong> Lejos de invalidar la práctica, estas sutiles variables físicas sirven como andamiaje para discutir los límites de los modelos analíticos idealizados.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diapositiva 12: Cuestionario -->
+        <section class="slide">
+            <div class="glass-card p-6 md:p-12 rounded-3xl max-w-4xl w-full flex flex-col h-full md:h-auto max-h-[85vh]">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl md:text-3xl font-serif font-bold text-physics flex items-center">
+                        <i data-lucide="help-circle" class="mr-3 w-6 h-6 md:w-8 md:h-8"></i> Evaluación Rápida
+                    </h2>
+                    <span id="quiz-progress" class="text-sm text-slate-400 font-medium bg-slate-800 px-3 py-1 rounded-full">Pregunta 1 de 10</span>
+                </div>
+                
+                <!-- Contenedor del Quiz con scroll si es necesario -->
+                <div id="quiz-container" class="flex-1 overflow-y-auto pr-2 pb-4">
+                    <!-- Las preguntas (o resultados) se inyectarán aquí vía JavaScript -->
+                </div>
+
+                <div id="quiz-controls" class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center transition-opacity duration-300">
+                    <button id="btn-quiz-prev" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium flex items-center">
+                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Anterior
+                    </button>
+                    <button id="btn-quiz-next" class="px-4 py-2 bg-physics hover:bg-emerald-600 text-white rounded-lg transition-colors text-sm font-bold flex items-center shadow-lg shadow-emerald-900/20">
+                        Siguiente <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diapositiva 13: Cierre y Anexos -->
+        <section class="slide">
+            <div class="glass-card p-8 md:p-16 rounded-3xl max-w-4xl w-full text-center relative overflow-hidden">
+                <!-- Icono de fondo decorativo -->
+                <i data-lucide="music-4" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 text-slate-800 opacity-20 pointer-events-none"></i>
+                
+                <div class="relative z-10">
+                    <h2 class="text-lg md:text-2xl font-bold text-physics mb-6 md:mb-8 uppercase tracking-widest"> </h2>
+                    
+                    <i data-lucide="quote" class="w-8 h-8 md:w-10 md:h-10 text-slate-400 mx-auto mb-4 md:mb-6 opacity-70"></i>
+                    
+                    <blockquote class="text-xl md:text-3xl font-serif text-white leading-relaxed mb-6 md:mb-8 italic px-4">
+                        "La música es el placer que experimenta la mente humana al contar <span class="text-physics not-italic font-bold">sin darse cuenta de que está contando</span>."
+                    </blockquote>
+                    
+                    <p class="text-base md:text-xl text-slate-300 font-medium mb-10 md:mb-12">
+                        — Gottfried Wilhelm Leibniz <br>
+                        <span class="text-xs md:text-sm font-light text-slate-500">(Filósofo y matemático)</span>
+                    </p>
+                    
+                    <div class="pt-6 md:pt-8 border-t border-slate-700/50">
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-200 mb-1 md:mb-2">¡Gracias por su atención!</h2>
+                        <p class="text-sm md:text-lg text-slate-400 flex items-center justify-center gap-2 mb-8 md:mb-10">
+                            <i data-lucide="messages-square" class="w-5 h-5"></i> ¿Preguntas o comentarios?
+                        </p>
+                        
+                        <!-- Sección de Anexo Interactivo -->
+                        <div class="inline-block mt-2">
+                            <p class="text-xs text-slate-500 uppercase tracking-widest mb-3 font-semibold">Anexo Interactivo</p>
+                            <a href="mastilGuitarra.html" target="_blank" class="inline-flex items-center px-5 py-3 md:px-6 md:py-4 bg-slate-800/80 hover:bg-slate-700 border border-slate-600 text-music hover:text-amber-400 rounded-xl transition-all shadow-lg hover:scale-105 active:scale-95 group">
+                                <i data-lucide="guitar" class="w-5 h-5 md:w-6 md:h-6 mr-3"></i>
+                                <span class="font-bold text-sm md:text-base">Simulación de Mástil de Guitarra</span>
+                                <i data-lucide="external-link" class="w-4 h-4 ml-3 opacity-50 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Controles de navegación inferior (Fijos e Intocables por el Scroll) -->
+    <footer class="absolute bottom-0 left-0 w-full p-4 md:p-6 flex justify-between items-center z-50 pointer-events-none">
+        <div class="pointer-events-auto">
+            <button id="btn-prev" class="bg-slate-800/90 hover:bg-slate-700 text-white p-3 rounded-full backdrop-blur-md transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-slate-600 shadow-lg active:scale-95">
+                <i data-lucide="chevron-left" class="w-5 h-5 md:w-6 md:h-6"></i>
+            </button>
+        </div>
+        
+        <div class="pointer-events-auto bg-slate-800/90 px-4 md:px-6 py-2 rounded-full backdrop-blur-md border border-slate-600 shadow-lg">
+            <span id="slide-counter" class="text-slate-300 font-medium tracking-widest text-sm md:text-base">1 / 13</span>
+        </div>
+
+        <div class="pointer-events-auto">
+            <button id="btn-next" class="bg-slate-800/90 hover:bg-slate-700 text-white p-3 rounded-full backdrop-blur-md transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-slate-600 shadow-lg active:scale-95">
+                <i data-lucide="chevron-right" class="w-5 h-5 md:w-6 md:h-6"></i>
+            </button>
+        </div>
+    </footer>
+
+    <!-- Script de lógica de navegación y dibujo SVG -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar Iconos Lucide
+            lucide.createIcons();
+
+            // --- Lógica de Dibujo de Ondas (Osciloscopios) ---
+            function drawWave(svgId, f1, f2, color1, color2) {
+                const svg = document.getElementById(svgId);
+                if (!svg) return;
+                
+                const width = 400;
+                const height = 80;
+                const midY = height / 2;
+                const amp = 30;
+                let path1 = `M 0 ${midY} `;
+                let path2 = `M 0 ${midY} `;
+                
+                let nodesHtml = '';
+
+                for(let x = 0; x <= width; x++) {
+                    let t = (x / width) * 2 * Math.PI;
+                    let y1 = midY - Math.sin(f1 * t) * amp;
+                    let y2 = midY - Math.sin(f2 * t) * amp;
+                    
+                    path1 += `L ${x} ${y1} `;
+                    path2 += `L ${x} ${y2} `;
+
+                    if (Math.abs(Math.sin(f1*t)) < 0.05 && Math.abs(Math.sin(f2*t)) < 0.05) {
+                        if (x === 0 || x === width || (x > 50 && x < width - 50 && Math.abs(x - width/2) < 5)) {
+                            nodesHtml += `<circle cx="${x}" cy="${midY}" r="4" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>`;
+                        }
+                    }
+                }
+                
+                svg.innerHTML = `
+                    <line x1="0" y1="${midY}" x2="${width}" y2="${midY}" stroke="#475569" stroke-width="1" stroke-dasharray="4 4" />
+                    <path d="${path1}" stroke="${color1}" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+                    <path d="${path2}" stroke="${color2}" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+                    ${nodesHtml}
+                `;
+            }
+
+            drawWave('svg-octava', 1, 2, '#10b981', '#facc15'); 
+            drawWave('svg-quinta', 2, 3, '#10b981', '#38bdf8'); 
+            drawWave('svg-cuarta', 3, 4, '#10b981', '#f87171');
+
+            // --- Lógica de la Presentación ---
+            const slides = document.querySelectorAll('.slide');
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+            const counter = document.getElementById('slide-counter');
+            const progressBar = document.getElementById('progress-bar');
+            
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+
+            // Constantes para el control de teclado y swipe en el cuestionario
+            const QUIZ_SLIDE_INDEX = 11; // Índice de la diapositiva del cuestionario (es la 12va, índice 11)
+            let inQuizMode = false;
+            let isShowingResults = false;
+
+            function updateUI() {
+                slides.forEach((slide, index) => {
+                    if (index === currentSlide) {
+                        slide.classList.add('active');
+                        slide.scrollTop = 0;
+                        if(index === QUIZ_SLIDE_INDEX) {
+                            inQuizMode = true;
+                        } else {
+                            inQuizMode = false;
+                        }
+                    } else {
+                        slide.classList.remove('active');
+                    }
+                });
+
+                btnPrev.disabled = currentSlide === 0;
+                btnNext.disabled = currentSlide === totalSlides - 1;
+                counter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+                const progressPercentage = ((currentSlide) / (totalSlides - 1)) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+            }
+
+            window.nextSlide = function() {
+                if (currentSlide < totalSlides - 1) {
+                    currentSlide++;
+                    updateUI();
+                }
+            };
+
+            function prevSlide() {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateUI();
+                }
+            }
+
+            btnNext.addEventListener('click', window.nextSlide);
+            btnPrev.addEventListener('click', prevSlide);
+
+            document.addEventListener('keydown', (e) => {
+                if (inQuizMode) {
+                   if(e.key === 'Space') return;
+                }
+
+                if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'Enter') {
+                    if(e.key === 'Space' && e.target.closest('.slide')) return; 
+                    if(!inQuizMode || e.key === 'ArrowRight') window.nextSlide();
+                } else if (e.key === 'ArrowLeft') {
+                    prevSlide();
+                }
             });
 
-            // Sonido al hacer clic
-            card.addEventListener('click', (e) => {
-                playSound(523.25, 'sine', 0.2, 0.1); // Do agudo de confirmación
+            // Swipe
+            let touchStartX = 0;
+            let touchStartY = 0;
+
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }, {passive: true});
+
+            document.addEventListener('touchend', e => {
+                let touchEndX = e.changedTouches[0].screenX;
+                let touchEndY = e.changedTouches[0].screenY;
+                
+                let xDiff = touchEndX - touchStartX;
+                let yDiff = touchEndY - touchStartY;
+                
+                if (Math.abs(xDiff) > Math.abs(yDiff) && !e.target.closest('.quiz-option')) {
+                    const swipeThreshold = 50;
+                    if (xDiff < -swipeThreshold) {
+                        window.nextSlide();
+                    } else if (xDiff > swipeThreshold) {
+                        prevSlide();
+                    }
+                }
+            }, {passive: true});
+
+
+            // --- Lógica del Cuestionario ---
+            const quizData = {
+                "questions": [
+                    {
+                        "question": "De acuerdo con el modelo de Pitágoras (Afinación Justa), ¿qué ocurre con la frecuencia de una cuerda vibrante si su longitud útil se reduce a dos tercios de la original ($2/3 L$)?",
+                        "answerOptions": [
+                            {"text": "La frecuencia se duplica, produciendo una Octava.", "isCorrect": false, "rationale": "La duplicación de frecuencia ocurre al reducir la longitud de la cuerda a la mitad ($L/2$), no a dos tercios."},
+                            {"text": "La frecuencia se multiplica por 1.5, produciendo una Quinta Justa.", "isCorrect": true, "rationale": "La relación $3:2$ corresponde matemáticamente a un factor de 1.5, lo cual define el intervalo musical de la Quinta Justa en el sistema pitagórico."},
+                            {"text": "La frecuencia aumenta un 33%, produciendo una Cuarta Justa.", "isCorrect": false, "rationale": "Este incremento corresponde a la proporción $4:3$, que se logra al reducir la longitud a tres cuartos de la original ($3/4 L$)."},
+                            {"text": "La frecuencia permanece igual, pero la amplitud de la onda estacionaria aumenta.", "isCorrect": false, "rationale": "Cambiar la longitud útil de la cuerda altera directamente la frecuencia de oscilación."}
+                        ],
+                        "hint": "Recuerda la relación inversa entre longitud y frecuencia, y el intervalo que se construye con la proporción $3:2$."
+                    },
+                    {
+                        "question": "En el contexto de la evolución de las escalas musicales, ¿cuál fue el origen del fenómeno físico-matemático conocido como la \"Coma Pitagórica\"?",
+                        "answerOptions": [
+                            {"text": "La imperfección en la densidad lineal de masa de las cuerdas de tripa.", "isCorrect": false, "rationale": "Es un problema matemático intrínseco al sistema de afinación."},
+                            {"text": "La discrepancia resultante al intentar hacer coincidir el ciclo de 12 quintas justas puras con el ciclo de 7 octavas puras.", "isCorrect": true, "rationale": "Las potencias de $1.5$ (quintas) y $2$ (octavas) nunca se cruzan en el conjunto de los enteros: $(1.5)^{12} \\ne 2^7$."},
+                            {"text": "La pérdida de energía acústica por la fricción de la cuerda con puentes de contacto plano.", "isCorrect": false, "rationale": "El amortiguamiento altera la amplitud, no genera la Coma Pitagórica."},
+                            {"text": "La incapacidad del oído humano para percibir frecuencias superiores a 20.000 Hz.", "isCorrect": false, "rationale": "El límite de audición no interfiere con la estructura matemática en las octavas centrales."}
+                        ],
+                        "hint": "Considera el objetivo de Pitágoras de crear un sistema circular perfecto."
+                    },
+                    {
+                        "question": "Para solucionar las disonancias producidas por la Coma Pitagórica y permitir la modulación entre tonalidades, ¿qué solución matemática implementa el Temperamento Igual moderno?",
+                        "answerOptions": [
+                            {"text": "Ajusta la longitud sumando un error constante de $0.8 \\text{ cm}$ a todos los trastes.", "isCorrect": false, "rationale": "El temperamento igual modifica las frecuencias relativas, no añade una longitud constante física."},
+                            {"text": "Divide la octava en 12 semitonos utilizando un factor multiplicativo geométrico derivado de $\\sqrt[12]{2}$.", "isCorrect": true, "rationale": "Al multiplicar por $\\sqrt[12]{2} \\approx 1.059463$, el error se reparte uniformemente, logrando que los 12 pasos sean geométricamente iguales."},
+                            {"text": "Conserva las proporciones exactas de $3:2$ y distribuye el error sobrante en las terceras.", "isCorrect": false, "rationale": "Este enfoque describe temperamentos históricos irregulares (mesotónico)."},
+                            {"text": "Emplea únicamente el camino de las Octavas puras y descarta el uso de Quintas.", "isCorrect": false, "rationale": "Descartar las quintas impediría la formación de la escala de 12 notas."}
+                        ]
+                    },
+                    {
+                        "question": "En la ecuación de Taylor para la velocidad de propagación ($v = \\sqrt{\\frac{T}{\\mu}}$), ¿qué efecto tendrá sobre la frecuencia fundamental si aumentamos la tensión ($T$), manteniendo la longitud y la masa constantes?",
+                        "answerOptions": [
+                            {"text": "La frecuencia fundamental disminuirá.", "isCorrect": false, "rationale": "El enunciado establece que la masa se mantiene constante."},
+                            {"text": "La frecuencia fundamental aumentará, ya que la velocidad de propagación se incrementa.", "isCorrect": true, "rationale": "La frecuencia es directamente proporcional a la velocidad de la onda ($f_n = \\frac{n}{2L}v$). Un aumento en la tensión eleva la frecuencia."},
+                            {"text": "La frecuencia permanecerá inalterada, pero se excitarán modos de vibración de orden superior.", "isCorrect": false, "rationale": "Aumentar la tensión altera la frecuencia de todos los modos de vibración."},
+                            {"text": "La longitud de onda ($\\lambda$) disminuirá proporcionalmente.", "isCorrect": false, "rationale": "La longitud de onda viene determinada por la longitud física ($\\lambda = 2L$), no se altera con la tensión."}
+                        ],
+                        "hint": "Relaciona la ecuación de Taylor con la ecuación de frecuencia $f = \\frac{v}{2L}$."
+                    },
+                    {
+                        "question": "En el montaje del monocordio, se emplean puentes de balsa con área de contacto plano de $0.8 \\text{ cm}$. En comparación con un modelo teórico de puentes sin dimensiones, ¿cuál es la principal consecuencia física?",
+                        "answerOptions": [
+                            {"text": "Elimina la fricción, permitiendo una onda estacionaria perpetua.", "isCorrect": false, "rationale": "Cualquier área de contacto real introduce fricción y amortiguamiento."},
+                            {"text": "Genera una incertidumbre en la determinación precisa de la longitud vibrante libre de la cuerda ($L$).", "isCorrect": true, "rationale": "Como la cuerda descansa sobre una superficie plana, el punto exacto de oscilación no está matemáticamente definido, creando un margen de error longitudinal ($\\Delta L$)."},
+                            {"text": "Obliga a la cuerda a vibrar exclusivamente en su segundo armónico.", "isCorrect": false, "rationale": "El soporte plano afecta a todos los modos por igual mediante amortiguamiento."},
+                            {"text": "Compensa automáticamente la Coma Pitagórica en los extremos.", "isCorrect": false, "rationale": "La anchura del soporte no corrige discrepancias aritméticas de afinación."}
+                        ]
+                    },
+                    {
+                        "question": "Si sitúas un puente móvil presionando firmemente la cuerda en la marca de $L/3$ (\"pisar\"), ¿qué transformación física está ocurriendo en el sistema?",
+                        "answerOptions": [
+                            {"text": "Se modifica la condición de contorno, acortando la longitud física disponible y creando una nueva nota fundamental.", "isCorrect": true, "rationale": "Al presionar, el puente móvil establece un nuevo extremo fijo, la cuerda solo puede vibrar en la sección libre restante."},
+                            {"text": "Se induce un nodo intermedio, aislando el tercer armónico natural.", "isCorrect": false, "rationale": "Este fenómeno describe la acción de \"rozar\" la cuerda, no de oprimirla."},
+                            {"text": "La tensión ($T$) se reduce a un tercio de su valor nominal.", "isCorrect": false, "rationale": "Pisar la cuerda en un puente no disminuye la tensión global; suele incrementarla marginalmente."},
+                            {"text": "La densidad lineal de masa ($\\mu$) aumenta proporcionalmente.", "isCorrect": false, "rationale": "La densidad lineal es una propiedad del material y no se altera por presión."}
+                        ]
+                    },
+                    {
+                        "question": "Si en lugar de pisar, retiras el puente y rozas sutilmente la cuerda en la marca $L/3$ (soltándola tras pulsar), ¿por qué se escucha un tono agudo y cristalino (el 3er armónico)?",
+                        "answerOptions": [
+                            {"text": "Porque el roce aumenta localmente la tensión de la cuerda.", "isCorrect": false, "rationale": "El contacto superficial suave no altera la tensión global."},
+                            {"text": "Porque el contacto suave absorbe las frecuencias agudas.", "isCorrect": false, "rationale": "Es inverso: amortigua la fundamental y permite que los agudos (armónicos) resuenen."},
+                            {"text": "Porque el dedo amortigua modos que requieren movimiento, pero permite sobrevivir a los modos que poseen un nodo (desplazamiento nulo) en $L/3$.", "isCorrect": true, "rationale": "El 3er armónico divide la cuerda en 3 secciones con nodos en $L/3$ y $2/3L$. Al no requerir movimiento ahí, su energía no se disipa."},
+                            {"text": "Porque la grasa del dedo reduce la fricción en la onda.", "isCorrect": false, "rationale": "No explica el aislamiento selectivo de frecuencias."}
+                        ],
+                        "hint": "Considera qué partes de una onda estacionaria se mueven (vientres) y cuáles están inmóviles (nodos)."
+                    },
+                    {
+                        "question": "Desde la perspectiva de la física de ondas, ¿por qué el cerebro percibe el intervalo de Tercera Mayor (proporción $5:4$) como un \"coro armonioso\" (consonante)?",
+                        "answerOptions": [
+                            {"text": "Porque la frecuencia grave ahoga a la aguda, simplificando el sonido.", "isCorrect": false, "rationale": "La consonancia requiere la coexistencia de ambas frecuencias, no enmascaramiento."},
+                            {"text": "Porque las crestas de ambas ondas coinciden en el espacio a intervalos regulares (cada 4 y 5 ciclos), generando interferencia constructiva periódica.", "isCorrect": true, "rationale": "Las proporciones de enteros pequeños ($5:4$) aseguran que las ondas se sincronicen estructuradamente en el tiempo, lo que el cerebro interpreta como armonía."},
+                            {"text": "Porque las dos frecuencias están separadas exactamente por 100 Hz.", "isCorrect": false, "rationale": "La consonancia depende de la relación geométrica (cociente), no de una diferencia aritmética fija en Hz."},
+                            {"text": "Porque el intervalo anula la reverberación acústica del recinto.", "isCorrect": false, "rationale": "La interacción ocurre a nivel de espectro y procesamiento auditivo, independiente de la sala."}
+                        ]
+                    },
+                    {
+                        "question": "Con el monocordio afinado a $164.8 \\text{ Hz}$, ¿cuál será la frecuencia si \"pisas\" firmemente con el puente móvil en la marca $\\frac{1}{3}L$ y pulsas el segmento de cuerda de la derecha?",
+                        "answerOptions": [
+                            {"text": "$164.8 \\text{ Hz}$", "isCorrect": false, "rationale": "Esa es la frecuencia fundamental de toda la cuerda libre."},
+                            {"text": "$247.2 \\text{ Hz}$", "isCorrect": true, "rationale": "El segmento de la derecha equivale a $\\frac{2}{3}L$. Como $f \\propto 1/L$, la frecuencia se multiplica por el inverso ($3/2$ o $1.5$). $164.8 \\times 1.5 = 247.2 \\text{ Hz}$."},
+                            {"text": "$494.4 \\text{ Hz}$", "isCorrect": false, "rationale": "Esta sería la frecuencia si rozaras en $L/3$ para aislar el 3er armónico, o si pisaras en $2/3L$ tocando el tramo corto."},
+                            {"text": "$329.6 \\text{ Hz}$", "isCorrect": false, "rationale": "Representa el doble (octava), ocurriría si la longitud útil fuera exactamente la mitad ($L/2$)."}
+                        ],
+                        "hint": "Determina la longitud física del segmento que vas a pulsar (el derecho), y aplica la relación inversa."
+                    },
+                    {
+                        "question": "En el caso anterior (puente en $\\frac{1}{3}L$), si pulsaras accidentalmente la pequeña sección de cuerda atrapada a la izquierda del puente, ¿qué nota (frecuencia fundamental) registraría el osciloscopio?",
+                        "answerOptions": [
+                            {"text": "$164.8 \\text{ Hz}$", "isCorrect": false, "rationale": "El segmento es más corto que la longitud total, su frecuencia será mayor."},
+                            {"text": "$247.2 \\text{ Hz}$", "isCorrect": false, "rationale": "Es la frecuencia del segmento largo de la derecha ($\\frac{2}{3}L$)."},
+                            {"text": "$494.4 \\text{ Hz}$", "isCorrect": true, "rationale": "El segmento izquierdo mide $\\frac{1}{3}L$. Al ser inversamente proporcional ($f \\propto 1/L$), la frecuencia se multiplica por 3. $164.8 \\times 3 = 494.4 \\text{ Hz}$."},
+                            {"text": "$988.8 \\text{ Hz}$", "isCorrect": false, "rationale": "Correspondería al segundo armónico de ese segmento corto."}
+                        ]
+                    }
+                ]
+            };
+
+            const quizContainer = document.getElementById('quiz-container');
+            const btnQuizPrev = document.getElementById('btn-quiz-prev');
+            const btnQuizNext = document.getElementById('btn-quiz-next');
+            const quizProgress = document.getElementById('quiz-progress');
+            const quizControls = document.getElementById('quiz-controls');
+            
+            let currentQuestionIndex = 0;
+            let userAnswers = new Array(quizData.questions.length).fill(null);
+
+            function showQuizResults() {
+                isShowingResults = true;
+                
+                let correctCount = 0;
+                userAnswers.forEach((ansIdx, qIdx) => {
+                    if (ansIdx !== null && quizData.questions[qIdx].answerOptions[ansIdx].isCorrect) {
+                        correctCount++;
+                    }
+                });
+
+                quizControls.classList.add('hidden');
+                quizProgress.textContent = "Resultados Finales";
+
+                const total = quizData.questions.length;
+                let feedbackMsg = correctCount === total ? "¡Excelente! Demostraste un dominio perfecto de los conceptos acústicos y matemáticos del laboratorio." :
+                                  correctCount >= total * 0.7 ? "¡Muy buen trabajo! Lograste una comprensión sólida de la teoría y la práctica de las ondas estacionarias." :
+                                  "Buen intento. Te invitamos a revisar los conceptos clave de la presentación para reforzar la teoría física detrás de la música.";
+
+                let medalColor = correctCount >= total * 0.7 ? 'border-emerald-500 text-emerald-400' : 'border-amber-500 text-amber-400';
+
+                quizContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full text-center fade-in py-8">
+                        <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-6 border-4 ${medalColor}">
+                            <i data-lucide="award" class="w-10 h-10"></i>
+                        </div>
+                        <h3 class="text-2xl md:text-3xl font-bold text-white mb-4">Cuestionario Finalizado</h3>
+                        <p class="text-lg md:text-xl text-slate-300 mb-6">Respondiste correctamente <strong class="text-physics text-2xl mx-1">${correctCount}</strong> de <strong class="text-white text-2xl mx-1">${total}</strong> preguntas.</p>
+                        
+                        <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700 mb-8 max-w-md w-full shadow-inner">
+                            <p class="text-sm md:text-base text-slate-300 italic">"${feedbackMsg}"</p>
+                        </div>
+                        
+                        <button id="btn-go-conclusion" class="px-6 py-3 bg-physics hover:bg-emerald-600 text-white rounded-xl transition-all shadow-lg hover:scale-105 active:scale-95 text-base md:text-lg font-bold flex items-center">
+                            Ver Conclusión <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
+                        </button>
+                    </div>
+                `;
+                
+                lucide.createIcons();
+                document.getElementById('btn-go-conclusion').addEventListener('click', () => {
+                    isShowingResults = false;
+                    window.nextSlide();
+                });
+            }
+
+            function renderQuestion() {
+                const q = quizData.questions[currentQuestionIndex];
+                
+                let questionText = q.question.replace(/\$(.*?)\$/g, '<span class="text-emerald-400 font-mono italic px-1">\\($1\\)</span>');
+                
+                let html = `
+                    <div class="mb-6 fade-in">
+                        <h3 class="text-xl md:text-2xl text-slate-200 font-medium mb-6 leading-relaxed">${questionText}</h3>
+                        <div class="space-y-3">
+                `;
+
+                q.answerOptions.forEach((opt, index) => {
+                    let optText = opt.text.replace(/\$(.*?)\$/g, '<span class="text-emerald-400 font-mono italic px-1">\\($1\\)</span>');
+                    
+                    let stateClass = 'bg-slate-800/80 text-slate-300';
+                    let iconHtml = '<div class="w-5 h-5 rounded-full border-2 border-slate-600 mr-4 shrink-0 flex items-center justify-center"></div>';
+                    let rationaleHtml = '';
+
+                    if (userAnswers[currentQuestionIndex] !== null) {
+                        const isSelected = userAnswers[currentQuestionIndex] === index;
+                        
+                        if (opt.isCorrect) {
+                            stateClass = 'correct text-emerald-100';
+                            iconHtml = '<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 mr-4 shrink-0"></i>';
+                            if(isSelected) {
+                                rationaleHtml = `<div class="rationale-box visible mt-3 p-3 bg-emerald-900/30 border border-emerald-800/50 rounded-lg text-sm text-emerald-200 leading-relaxed"><strong class="block mb-1">¡Correcto!</strong> ${opt.rationale}</div>`;
+                            }
+                        } else if (isSelected && !opt.isCorrect) {
+                            stateClass = 'incorrect text-red-100';
+                            iconHtml = '<i data-lucide="x-circle" class="w-5 h-5 text-red-500 mr-4 shrink-0"></i>';
+                            rationaleHtml = `<div class="rationale-box visible mt-3 p-3 bg-red-900/30 border border-red-800/50 rounded-lg text-sm text-red-200 leading-relaxed"><strong class="block mb-1">Incorrecto.</strong> ${opt.rationale}</div>`;
+                        } else {
+                            stateClass = 'bg-slate-800/40 text-slate-500 cursor-not-allowed';
+                        }
+                    }
+
+                    html += `
+                        <div class="quiz-option ${stateClass} p-4 rounded-xl flex flex-col" data-opt-idx="${index}" ${userAnswers[currentQuestionIndex] !== null ? 'style="cursor:default;"' : ''}>
+                            <div class="flex items-center w-full">
+                                ${iconHtml}
+                                <span class="text-base md:text-lg flex-1">${optText}</span>
+                            </div>
+                            ${rationaleHtml}
+                        </div>
+                    `;
+                });
+
+                if (q.hint && userAnswers[currentQuestionIndex] === null) {
+                    html += `
+                        <div class="mt-6 flex items-start gap-2 text-slate-400 text-sm">
+                            <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500 mt-0.5 shrink-0"></i>
+                            <p><em>Pista:</em> ${q.hint}</p>
+                        </div>
+                    `;
+                }
+
+                html += `</div></div>`;
+                quizContainer.innerHTML = html;
+                
+                lucide.createIcons();
+                MathJax.typesetPromise([quizContainer]);
+
+                if (userAnswers[currentQuestionIndex] === null) {
+                    const options = quizContainer.querySelectorAll('.quiz-option');
+                    options.forEach(opt => {
+                        opt.addEventListener('click', function() {
+                            handleAnswer(parseInt(this.getAttribute('data-opt-idx')));
+                        });
+                    });
+                }
+
+                quizProgress.textContent = `Pregunta ${currentQuestionIndex + 1} de ${quizData.questions.length}`;
+                btnQuizPrev.disabled = currentQuestionIndex === 0;
+                
+                if (currentQuestionIndex === quizData.questions.length - 1) {
+                    btnQuizNext.innerHTML = 'Finalizar <i data-lucide="flag" class="w-4 h-4 ml-2"></i>';
+                } else {
+                    btnQuizNext.innerHTML = 'Siguiente <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>';
+                }
+            }
+
+            function handleAnswer(selectedIndex) {
+                userAnswers[currentQuestionIndex] = selectedIndex;
+                renderQuestion(); 
+            }
+
+            btnQuizNext.addEventListener('click', () => {
+                if (currentQuestionIndex < quizData.questions.length - 1) {
+                    currentQuestionIndex++;
+                    renderQuestion();
+                } else {
+                    showQuizResults();
+                }
             });
+
+            btnQuizPrev.addEventListener('click', () => {
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--;
+                    renderQuestion();
+                }
+            });
+
+            renderQuestion();
+
+            updateUI();
         });
     </script>
 </body>
-
 </html>

@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Guitarra — Síntesis Aditiva</title>
+  <meta name="description" content="Simulador educativo de cuerda vibrante con síntesis aditiva de 8 armónicos, osciloscopio en tiempo real y espectro de frecuencias." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #050a14; --bg2: #0a0f1e; --bg3: #0d1525; --panel: #0f1a2e;
+      --border: #1a2d4a; --border2: #1e3a5f;
+      --text: #c8d8ea; --text-dim: #4a6a8a; --text-muted: #2a4060;
+      --green: #00f5a0; --cyan: #00e5ff; --blue: #3ecfff;
+      --purple: #a78bfa; --orange: #fb923c; --red: #f43f5e;
+      --font-ui: 'Rajdhani', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-body: 'Inter', sans-serif;
+    }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font-ui); }
+
+    /* ─── TOP BAR ─────────────────────────────────────────── */
+    #topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 44px; z-index: 100;
+      background: linear-gradient(90deg, #060c1a 0%, #0a1228 100%);
+      border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 14px; gap: 12px;
+    }
+    #logo { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; letter-spacing: .05em; white-space: nowrap; }
+    #logo svg { width: 20px; height: 20px; fill: var(--green); }
+    #logo span { color: var(--green); }
+    .dot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    #topbar-center { flex: 1; display: flex; align-items: center; justify-content: center; gap: 14px; }
+    #vol-icon { color: var(--text-dim); font-size: 16px; }
+    #vol-slider { width: 100px; accent-color: var(--green); cursor: pointer; }
+    #vol-val { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); min-width: 32px; }
+    #mode-toggle-btn {
+      padding: 5px 16px; border-radius: 20px; border: 1px solid var(--border2);
+      background: #0d1525; color: var(--text); font-family: var(--font-ui); font-size: 12px; font-weight: 600;
+      cursor: pointer; letter-spacing: .08em; transition: all .2s;
+    }
+    #mode-toggle-btn.harmonic { background: linear-gradient(90deg,#0a3d2e,#0d2240); border-color: var(--green); color: var(--green); }
+    .tb-btn {
+      padding: 5px 13px; border-radius: 4px; border: 1px solid var(--border2);
+      background: transparent; color: var(--text); font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+      cursor: pointer; letter-spacing: .08em; transition: all .18s;
+    }
+    .tb-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    #btn-stop { border-color: var(--border2); color: var(--text-dim); }
+    #btn-stop:hover { border-color: var(--cyan); color: var(--cyan); }
+    #btn-stop.playing { background: rgba(244,63,94,.2); border-color: var(--red); color: var(--red); }
+    #btn-pluck {
+      padding: 5px 14px; border-radius: 4px; border: 1px solid var(--green);
+      background: rgba(0,245,160,.1); color: var(--green); font-family: var(--font-ui);
+      font-size: 11px; font-weight: 700; cursor: pointer; letter-spacing: .08em; transition: all .18s;
+    }
+    #btn-pluck:hover { background: rgba(0,245,160,.2); box-shadow: 0 0 12px rgba(0,245,160,.3); }
+    #btn-pluck:active { transform: scale(0.96); }
+    @keyframes pluck-ring {
+      0%   { box-shadow: 0 0 0 0 rgba(0,245,160,.6); }
+      100% { box-shadow: 0 0 0 10px rgba(0,245,160,0); }
+    }
+    #btn-pluck.plucking { animation: pluck-ring 0.5s ease-out; }
+
+    /* ─── MAIN LAYOUT ─────────────────────────────────────── */
+    #app {
+      display: grid; grid-template-columns: 240px 1fr 280px; gap: 0;
+      height: 100vh; padding-top: 44px; overflow: hidden;
+    }
+
+    /* ─── LEFT PANEL ──────────────────────────────────────── */
+    #left-panel {
+      background: var(--bg3); border-right: 1px solid var(--border);
+      overflow-y: auto; display: flex; flex-direction: column;
+    }
+    #left-panel::-webkit-scrollbar { width: 4px; }
+    #left-panel::-webkit-scrollbar-track { background: transparent; }
+    #left-panel::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    .panel-header {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--text-dim);
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    }
+    .panel-header svg { width: 12px; height: 12px; }
+    .section { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .section-label { font-size: 9px; font-weight: 700; letter-spacing: .15em; color: var(--text-muted); margin-bottom: 8px; }
+
+    /* Strings */
+    .string-btn {
+      display: flex; align-items: center; gap: 8px; width: 100%; padding: 5px 8px;
+      border: 1px solid transparent; border-radius: 4px; background: transparent;
+      cursor: pointer; transition: all .15s; color: var(--text); margin-bottom: 3px;
+    }
+    .string-btn:hover { background: rgba(0,229,255,.06); border-color: var(--border2); }
+    .string-btn.active { background: rgba(0,245,160,.08); border-color: var(--green); }
+    .str-id { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); min-width: 18px; }
+    .str-name { font-family: var(--font-ui); font-size: 14px; font-weight: 600; flex: 1; text-align: left; }
+    .string-btn.active .str-name { color: var(--green); }
+    .str-freq { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); }
+    .string-btn.active .str-freq { color: var(--green); }
+
+    /* Hz input */
+    #hz-input-wrap { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+    #hz-input {
+      flex: 1; background: var(--bg2); border: 1px solid var(--border2); border-radius: 4px;
+      color: var(--green); font-family: var(--font-mono); font-size: 14px; font-weight: 700;
+      padding: 5px 8px; outline: none; text-align: right;
+    }
+    #hz-input:focus { border-color: var(--cyan); }
+    #hz-unit { font-size: 11px; color: var(--text-dim); }
+
+    /* Mode toggle */
+    .mode-row { display: flex; align-items: center; justify-content: center; }
+    .mode-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; padding: 0 10px; }
+    .mode-label.left { color: var(--text-dim); text-align: right; flex: 1; }
+    .mode-label.right { color: var(--text-dim); text-align: left; flex: 1; }
+    .mode-label.active-left { color: var(--cyan); }
+    .mode-label.active-right { color: var(--green); }
+    #mode-switch {
+      position: relative; width: 40px; height: 20px; background: var(--border2);
+      border-radius: 10px; cursor: pointer; transition: background .2s; flex-shrink: 0;
+    }
+    #mode-switch.on { background: linear-gradient(90deg, var(--green), #00c87a); }
+    #mode-knob {
+      position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+      background: white; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 4px #000;
+    }
+    #mode-switch.on #mode-knob { transform: translateX(20px); }
+    .mode-desc { font-size: 10px; color: var(--text-dim); margin-top: 8px; line-height: 1.5; text-align: center; }
+
+    /* Harmonic buttons — 2 × 4 grid */
+    .harm-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+    .harm-btn {
+      padding: 6px 2px; border-radius: 4px; border: 1px solid var(--border2);
+      background: var(--bg2); cursor: pointer; transition: all .15s;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .harm-btn:hover { border-color: var(--text-dim); }
+    .harm-btn.active-k1 { border-color: #00f5a0; background: rgba(0,245,160,.10); }
+    .harm-btn.active-k2 { border-color: #00e5ff; background: rgba(0,229,255,.10); }
+    .harm-btn.active-k3 { border-color: #a78bfa; background: rgba(167,139,250,.10); }
+    .harm-btn.active-k4 { border-color: #fb923c; background: rgba(251,146,60,.10); }
+    .harm-btn.active-k5 { border-color: #f43f5e; background: rgba(244,63,94,.10); }
+    .harm-btn.active-k6 { border-color: #fbbf24; background: rgba(251,191,36,.10); }
+    .harm-btn.active-k7 { border-color: #4ade80; background: rgba(74,222,128,.10); }
+    .harm-btn.active-k8 { border-color: #e879f9; background: rgba(232,121,249,.10); }
+    .harm-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .harm-label { font-family: var(--font-mono); font-size: 9px; font-weight: 700; color: var(--text); }
+    .harm-sub { font-size: 8px; color: var(--text-dim); }
+
+    /* Amplitude sliders */
+    .amp-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+    .amp-label { font-family: var(--font-mono); font-size: 10px; min-width: 22px; }
+    .amp-slider { flex: 1; cursor: pointer; height: 3px; }
+    .amp-val { font-family: var(--font-mono); font-size: 10px; min-width: 30px; text-align: right; color: var(--text-dim); }
+
+    /* ─── CENTER PANEL ────────────────────────────────────── */
+    #center-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+    .center-header {
+      padding: 8px 14px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .center-header-left { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: .1em; color: var(--text-dim); }
+    .center-header-right { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-dim); }
+    .active-badge { background: rgba(0,245,160,.12); border: 1px solid var(--green); color: var(--green); padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .clear-btn { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 11px; letter-spacing: .05em; }
+    .clear-btn:hover { color: var(--red); }
+
+    /* Neck */
+    #neck-wrap { flex: 0 0 auto; position: relative; border-bottom: 1px solid var(--border); }
+    #neck-canvas { display: block; width: 100%; cursor: crosshair; }
+
+    /* Oscilloscope */
+    #osc-header {
+      padding: 7px 14px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 8px;
+    }
+    .osc-formula { font-size: 11px; color: var(--text-dim); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .osc-legend { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .leg-item { display: flex; align-items: center; gap: 3px; font-family: var(--font-mono); font-size: 9px; }
+    .leg-line { width: 12px; height: 2px; border-radius: 1px; }
+    .osc-view-btns { display: flex; gap: 4px; flex-shrink: 0; }
+    .view-btn {
+      padding: 3px 10px; border-radius: 3px; border: 1px solid var(--border2);
+      background: transparent; color: var(--text-dim); font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+      cursor: pointer; letter-spacing: .08em; transition: all .15s;
+    }
+    .view-btn.active { background: rgba(0,245,160,.12); border-color: var(--green); color: var(--green); }
+    #osc-wrap { flex: 1; overflow: hidden; }
+    #osc-canvas { display: block; width: 100%; height: 100%; }
+
+    /* ─── RIGHT PANEL ─────────────────────────────────────── */
+    #right-panel {
+      background: var(--bg3); border-left: 1px solid var(--border);
+      overflow-y: auto; display: flex; flex-direction: column;
+    }
+    #right-panel::-webkit-scrollbar { width: 4px; }
+    #right-panel::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    .rpanel-header { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
+
+    /* Frequency display */
+    #freq-display { margin: 12px; padding: 14px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px; text-align: center; }
+    #freq-label { font-size: 9px; font-weight: 700; letter-spacing: .15em; color: var(--text-dim); margin-bottom: 8px; }
+    #freq-big { font-family: var(--font-mono); font-size: 36px; font-weight: 700; color: var(--green); line-height: 1; }
+    #freq-unit { font-size: 11px; color: var(--text-dim); margin: 4px 0; }
+    #freq-string-badge { display: inline-block; padding: 2px 12px; background: rgba(0,245,160,.12); border: 1px solid var(--green); color: var(--green); border-radius: 10px; font-size: 11px; font-weight: 700; margin-top: 6px; }
+
+    /* Decay bar */
+    #decay-bar-wrap { margin: 0 14px 10px; height: 3px; background: var(--bg2); border-radius: 2px; overflow: hidden; }
+    #decay-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--cyan)); border-radius: 2px; }
+
+    /* Telemetry */
+    .tele-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 14px; border-bottom: 1px solid var(--border); }
+    .tele-key { font-size: 10px; color: var(--text-dim); }
+    .tele-val { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text); }
+    .tele-val.is-harmonic { color: var(--green); letter-spacing: .05em; font-size: 10px; }
+
+    /* Spectrum */
+    .r-section { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .r-section-label { font-size: 9px; font-weight: 700; letter-spacing: .15em; color: var(--text-dim); margin-bottom: 10px; }
+    #spectrum-canvas { display: block; width: 100%; }
+
+    /* Harmonic detail rows */
+    .harm-detail-row { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+    .hd-label { font-family: var(--font-mono); font-size: 9px; min-width: 18px; }
+    .hd-bar-wrap { flex: 1; background: var(--bg2); border-radius: 2px; height: 5px; overflow: hidden; }
+    .hd-bar { height: 100%; border-radius: 2px; transition: width .3s; }
+    .hd-hz { font-family: var(--font-mono); font-size: 9px; color: var(--text-dim); min-width: 62px; text-align: right; }
+    .hd-amp { font-family: var(--font-mono); font-size: 9px; min-width: 28px; text-align: right; }
+
+    /* Equation card */
+    #eq-card { margin: 10px 14px; padding: 12px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 4px; border-left: 3px solid var(--green); }
+    #eq-label { font-size: 9px; font-weight: 700; letter-spacing: .12em; color: var(--text-dim); margin-bottom: 8px; }
+    #eq-render { text-align: center; }
+
+    /* ─── HELP MODAL ──────────────────────────────────────── */
+    #modal-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(5,10,20,.88); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
+    #modal-overlay.open { display: flex; }
+    #modal { background: #0d1525; border: 1px solid var(--border2); border-radius: 8px; max-width: 880px; width: 92%; max-height: 90vh; overflow-y: auto; }
+    #modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border2); }
+    #modal-title { font-size: 14px; font-weight: 700; letter-spacing: .1em; display: flex; align-items: center; gap: 10px; }
+    #modal-title .badge { background: rgba(0,245,160,.12); border: 1px solid var(--green); color: var(--green); padding: 3px 9px; border-radius: 4px; font-size: 11px; }
+    #modal-close { background: transparent; border: 1px solid var(--border2); color: var(--text-dim); width: 26px; height: 26px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all .15s; }
+    #modal-close:hover { border-color: var(--red); color: var(--red); }
+    #modal-body { display: grid; grid-template-columns: 1fr 1fr; }
+    .modal-col { padding: 18px 20px; }
+    .modal-col:first-child { border-right: 1px solid var(--border); }
+    .modal-col-header { font-size: 10px; font-weight: 700; letter-spacing: .12em; color: var(--text-dim); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+    .step { display: flex; gap: 12px; margin-bottom: 16px; }
+    .step-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--border2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text); }
+    .step-content h4 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .step-content p { font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+    .step-content b { color: var(--cyan); }
+    .physics-card { background: var(--bg2); border: 1px solid var(--border2); border-radius: 4px; padding: 14px; margin-bottom: 14px; }
+    .physics-card h4 { font-size: 10px; font-weight: 700; letter-spacing: .1em; color: var(--cyan); margin-bottom: 10px; }
+    .physics-card .eq-box { background: var(--bg3); border-radius: 4px; padding: 12px; text-align: center; margin: 10px 0; }
+    .physics-card table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+    .physics-card th { color: var(--text-dim); font-weight: 600; padding: 4px 6px; border-bottom: 1px solid var(--border); text-align: left; }
+    .physics-card td { padding: 4px 6px; color: var(--text); }
+    .physics-card p { font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESPONSIVE — 4 BREAKPOINTS
+       ≥ 1280 px  : Desktop grande    (3 cols fijas, layout actual)
+       900–1279 px: Laptop / Tablet H (3 cols comprimidas)
+       600–899 px : Tablet V          (1 col; panels reordenados)
+       < 600 px   : Móvil             (1 col; topbar envuelto)
+    ═══════════════════════════════════════════════════════════════ */
+
+    /* ── Laptop pequeño / tablet horizontal ────────────────────── */
+    @media (max-width: 1279px) {
+      #app { grid-template-columns: 200px 1fr 230px; }
+      #freq-big { font-size: 28px; }
+      .hd-hz { min-width: 52px; }
+    }
+
+    /* ── Tablet vertical ────────────────────────────────────────── */
+    @media (max-width: 899px) {
+      html, body { height: auto; overflow: auto; }
+
+      #app {
+        display: flex; flex-direction: column;
+        height: auto; min-height: 100vh;
+        overflow: visible; padding-top: 44px;
+      }
+
+      /* Orden visual: mástil+osciloscopio → análisis → configuración */
+      #center-panel { order: 1; overflow: visible; min-height: 0; }
+      #right-panel  { order: 2; border-left: none; border-top: 1px solid var(--border);
+                      overflow: visible;
+                      display: grid; grid-template-columns: 1fr 1fr; align-items: start; }
+      #left-panel   { order: 3; border-right: none; border-top: 1px solid var(--border);
+                      overflow: visible; }
+
+      /* Paneles laterales sin altura fija */
+      #left-panel, #right-panel { height: auto; }
+
+      /* Osciloscopio: altura explícita para ser visible */
+      #osc-wrap { height: 260px; flex: none; }
+
+      /* Panel derecho — 2 columnas en grid */
+      .rpanel-header     { grid-column: 1 / -1; }
+      #freq-display      { grid-column: 1; margin: 10px 10px 10px 12px; }
+      #decay-bar-wrap    { grid-column: 1; }
+      .tele-row          { grid-column: 2; padding: 5px 10px; }
+      .r-section         { grid-column: 1 / -1; }
+      #eq-card           { grid-column: 1 / -1; }
+
+      /* Cuerdas en 2 columnas */
+      #strings-list { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+
+      /* Armónicos en 4 columnas siguen igual */
+      #neck-canvas { height: 160px !important; }
+
+      /* Topbar: ocultar volumen, mostrar solo botones esenciales */
+      #vol-icon, #vol-val { display: none; }
+      #vol-slider { width: 80px; }
+      #topbar { gap: 8px; }
+      #topbar-center { gap: 8px; }
+    }
+
+    /* ── Móvil ─────────────────────────────────────────────────── */
+    @media (max-width: 599px) {
+      /* Topbar en 2 filas */
+      #topbar {
+        height: auto; flex-wrap: wrap; padding: 6px 10px;
+        gap: 6px; justify-content: space-between;
+      }
+      #logo { font-size: 12px; }
+      #logo svg { width: 16px; height: 16px; }
+      #topbar-center {
+        order: 3; width: 100%; justify-content: center; gap: 8px;
+        padding: 2px 0; border-top: 1px solid var(--border);
+      }
+      #vol-icon { display: inline; }
+      #vol-val  { display: inline; }
+      #vol-slider { width: 90px; }
+      /* Botones de acción más pequeños */
+      .tb-btn { padding: 4px 8px; font-size: 10px; }
+      #btn-pluck { padding: 4px 10px; font-size: 10px; }
+
+      /* Padding-top mayor para 2 filas de topbar */
+      #app { padding-top: 88px; }
+
+      /* Panel derecho: 1 sola columna en móvil */
+      #right-panel { display: flex; flex-direction: column; }
+
+      /* Cuerdas siguen en 2 columnas */
+      #strings-list { grid-template-columns: 1fr 1fr; }
+
+      /* Mástil más compacto */
+      #neck-canvas { height: 140px !important; }
+
+      /* Osciloscopio más compacto */
+      #osc-wrap { height: 200px; }
+
+      /* Osc header: ocultar leyenda en móvil muy pequeño */
+      .osc-legend { display: none; }
+
+      /* Leyenda de armónicos: más pequeña */
+      .harm-grid { grid-template-columns: repeat(4, 1fr); gap: 3px; }
+      .harm-btn { padding: 4px 2px; }
+
+      /* Telemetría: más compacta */
+      .tele-key { font-size: 9px; }
+      .tele-val { font-size: 11px; }
+
+      /* Freq big: reducida */
+      #freq-big { font-size: 30px; }
+
+      /* Osc formula: solo icono+nombre */
+      .osc-formula { font-size: 10px; }
+
+      /* Sliders de amplitud */
+      .amp-row { margin-bottom: 3px; }
+    }
+
+    /* ── Touch: asegurar que el canvas responde al toque ────────── */
+    @media (pointer: coarse) {
+      #neck-canvas { touch-action: none; }
+      .string-btn { padding: 7px 8px; }   /* área táctil más grande */
+      .harm-btn   { padding: 8px 2px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div id="logo">
+    <svg viewBox="0 0 24 24"><path d="M19.59 3a3 3 0 0 1 2.12 5.12L10 19.83l-4.24 1.41 1.41-4.24L19.59 3z"/></svg>
+    Simulador de <span>Guitarra</span>
+    <div class="dot-live"></div>
+  </div>
+  <div id="topbar-center">
+    <span id="vol-icon">🔊</span>
+    <input id="vol-slider" type="range" min="0" max="1" step="0.01" value="0.7" />
+    <span id="vol-val">0.70</span>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button id="btn-pluck" onclick="doPluck()">♪ PUNTEAR</button>
+    <button class="tb-btn" onclick="resetAll()">↺ RESET</button>
+    <button id="btn-stop" class="tb-btn" onclick="togglePlay()">▶ PLAY</button>
+    <button class="tb-btn" onclick="openHelp()">? AYUDA</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+
+  <!-- LEFT PANEL -->
+  <div id="left-panel">
+    <div class="panel-header">
+      <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      CONFIGURACIÓN
+    </div>
+
+    <div class="section">
+      <div class="section-label">CUERDAS DE GUITARRA</div>
+      <div id="strings-list"></div>
+      <div id="hz-input-wrap">
+        <input id="hz-input" type="number" step="0.01" min="20" max="2000" value="110.00" onchange="setCustomHz()" />
+        <span id="hz-unit">Hz</span>
+      </div>
+    </div>
+
+
+    <div class="section">
+      <div class="section-label">ARMÓNICOS ACTIVOS — K = 1…8</div>
+      <div class="harm-grid" id="harm-btns"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">AMPLITUDES — A<sub>K</sub></div>
+      <div id="amp-sliders"></div>
+    </div>
+  </div>
+
+  <!-- CENTER PANEL -->
+  <div id="center-panel">
+    <div class="center-header">
+      <div class="center-header-left">
+        🎸 <span id="neck-title">MÁSTIL DE GUITARRA — TRASTE 0</span>
+      </div>
+      <div class="center-header-right">
+        Cuerda activa: <span class="active-badge" id="active-badge">A2</span>
+        <button class="clear-btn" onclick="clearSelection()">× LIMPIAR</button>
+      </div>
+    </div>
+
+    <div id="neck-wrap">
+      <canvas id="neck-canvas" height="200"></canvas>
+    </div>
+
+    <div id="osc-header">
+      <div class="osc-formula">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        OSCILOSCOPIO
+        <span id="osc-formula-katex" style="margin-left:4px"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="osc-legend" id="osc-legend"></div>
+        <div class="osc-view-btns">
+          <button class="view-btn" id="btn-individual" onclick="setViewMode('individual')">INDIVIDUAL</button>
+          <button class="view-btn active" id="btn-resultante" onclick="setViewMode('resultante')">RESULTANTE</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="osc-wrap">
+      <canvas id="osc-canvas"></canvas>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="right-panel">
+    <div class="rpanel-header">✓ ANÁLISIS</div>
+    <div id="freq-display">
+      <div id="freq-label">FRECUENCIA BASE</div>
+      <div id="freq-big">110.00</div>
+      <div id="freq-unit">Hz</div>
+      <div id="freq-string-badge">A2</div>
+    </div>
+    <div id="decay-bar-wrap"><div id="decay-bar"></div></div>
+
+    <div class="tele-row"><span class="tele-key">Traste n:</span><span class="tele-val" id="t-fret">0</span></div>
+    <div class="tele-row"><span class="tele-key">f₀ (cuerda):</span><span class="tele-val" id="t-f0">110.00 Hz</span></div>
+    <div class="tele-row"><span class="tele-key">Período T:</span><span class="tele-val" id="t-period">9.09 ms</span></div>
+    <div class="tele-row"><span class="tele-key">Modo:</span><span class="tele-val is-harmonic" id="t-mode">FRET</span></div>
+
+    <div class="r-section">
+      <div class="r-section-label" id="spec-title">ESPECTRO — Y(F)</div>
+      <canvas id="spectrum-canvas" height="110"></canvas>
+    </div>
+
+    <div class="r-section">
+      <div class="r-section-label">DETALLE POR ARMÓNICO</div>
+      <div id="harm-detail"></div>
+    </div>
+
+    <div id="eq-card">
+      <div id="eq-label">ECUACIÓN ACTIVA</div>
+      <div id="eq-render"></div>
+    </div>
+  </div>
+</div>
+
+<!-- HELP MODAL -->
+<div id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div id="modal">
+    <div id="modal-header">
+      <div id="modal-title">
+        <span class="badge">?</span>
+        AYUDA — SIMULADOR DE GUITARRA
+      </div>
+      <button id="modal-close" onclick="closeHelp()">✕</button>
+    </div>
+    <div id="modal-body">
+      <div class="modal-col">
+        <div class="modal-col-header">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+          GUÍA DE USO DEL SIMULADOR
+        </div>
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Selecciona una cuerda</h4>
+            <p>En el panel izquierdo encontrarás las seis cuerdas estándar (E₂, A₂, D₃, G₃, B₃, E₄). Cada una tiene su frecuencia fundamental f₀ predefinida. Puedes también ingresar un valor personalizado en Hz.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Elige el modo de interacción</h4>
+            <p>El interruptor <b>"Pisar Traste / Armónico"</b> determina el modelo físico:<br>
+            • <b>Pisar Traste:</b> acorta la longitud efectiva, calculando fₙ = f₀·(2^(1/12))ⁿ.<br>
+            • <b>Armónico:</b> mantiene la longitud y aísla modos normales, fₖ = k · f₀.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Interactúa con el mástil</h4>
+            <p>Haz clic sobre cualquier celda del mástil para seleccionar un traste n ∈ [1, 24]. En modo Armónico, los círculos de colores indican las posiciones de los nodos de cada modo. El indicador verde muestra el traste activo en la <b>cuerda seleccionada</b>.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h4>Controla los 8 armónicos (Aₖ)</h4>
+            <p>Usa los 8 botones k₁–k₈ para activar o desactivar modos individuales. Los sliders ajustan la amplitud relativa Aₖ. Las amplitudes iniciales siguen la serie de Fourier (1/k) que aproxima la cuerda pulsada.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <h4>Reproduce audio</h4>
+            <p>• <b>♪ PUNTEAR:</b> simula el punteo real de la cuerda con envolvente ADSR (ataque 5 ms, decaimiento exponencial ~2 s).<br>
+            • <b>▶ PLAY:</b> tono sostenido continuo para análisis. El osciloscopio muestra cada componente y su suma y(t).</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-col">
+        <div class="modal-col-header">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+          FENÓMENO FÍSICO Y ECUACIONES
+        </div>
+        <div class="physics-card">
+          <h4>1. RELACIÓN TRASTE → FRECUENCIA (12-TET)</h4>
+          <p>Al pisar el traste n, la longitud efectiva de la cuerda se acorta. La nueva frecuencia fundamental sigue la escala de <em>temperamento igual</em>:</p>
+          <div class="eq-box" id="eq-modal-1"></div>
+          <table>
+            <tr><th>Variable</th><th>Descripción</th><th>Rango</th></tr>
+            <tr><td id="em-f0"></td><td>Frec. cuerda al aire</td><td>20–2000 Hz</td></tr>
+            <tr><td id="em-n"></td><td>Número de traste</td><td>0 – 24</td></tr>
+            <tr><td id="em-alpha"></td><td>Razón del semitono</td><td>≈ 1.0594</td></tr>
+          </table>
+        </div>
+        <div class="physics-card">
+          <h4>2. MODOS NORMALES DE VIBRACIÓN (ARMÓNICOS)</h4>
+          <p>Al inducir un nodo exacto sin alterar la longitud total, se anulan modos inferiores. La frecuencia del k-ésimo modo es un múltiplo entero exacto:</p>
+          <div class="eq-box" id="eq-modal-2"></div>
+          <p><small>k ∈ {1…8}: 1° = fundamental, 2° = primera sobredominante (octava), etc. Los nodos físicos se muestran en el mástil como círculos de color al activar el modo Armónico.</small></p>
+        </div>
+        <div class="physics-card">
+          <h4>3. SÍNTESIS ADITIVA — SUPERPOSICIÓN DE ONDAS</h4>
+          <p>La perturbación resultante se modela como superposición de ondas sinusoidales (Principio de Superposición de Fourier). Con amplitudes 1/k se aproxima el timbre de la cuerda pulsada:</p>
+          <div class="eq-box" id="eq-modal-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// CONSTANTES FÍSICAS Y DE COLOR
+// ════════════════════════════════════════════════════════════════
+const NUM_HARMONICS = 8;
+
+const STRINGS = [
+  { id: 'E2', name: 'E₂', freq: 82.41 },
+  { id: 'A2', name: 'A₂', freq: 110.00 },
+  { id: 'D3', name: 'D₃', freq: 146.83 },
+  { id: 'G3', name: 'G₃', freq: 196.00 },
+  { id: 'B3', name: 'B₃', freq: 246.94 },
+  { id: 'E4', name: 'E₄', freq: 329.63 },
+];
+
+// Colores para k1…k8 (visualmente distintos y vibrantes)
+const K_COLORS = [
+  '#00f5a0', // k1 — verde menta (fundamental)
+  '#00e5ff', // k2 — cian
+  '#a78bfa', // k3 — violeta
+  '#fb923c', // k4 — naranja
+  '#f43f5e', // k5 — rosa/rojo
+  '#fbbf24', // k6 — ámbar
+  '#4ade80', // k7 — verde esmeralda
+  '#e879f9', // k8 — fucsia
+];
+
+/*
+ * Posiciones de nodos en el mástil para cada armónico k (1-indexado).
+ * Calculadas con: n = round( 12 · log₂( k / (k−j) ) )  para j=1..k−1
+ * Solo se incluyen trastes en rango [1, 24].
+ *
+ * k1: sin nodos intermedios (fundamental)
+ * k2: n=12  (½L → octava)
+ * k3: n=7, 19  (⅓L, ⅔L)
+ * k4: n=5, 12, 24  (¼L, ½L, ¾L)
+ * k5: n=4, 9, 16  (⅕L, ⅖L, ⅗L) — ⁴⁄₅L da traste 28, fuera de rango
+ * k6: n=3, 7, 12, 19  (⅙L…⅚L en rango)
+ * k7: n=3, 6, 10, 15, 22
+ * k8: n=2, 5, 8, 12, 17, 24
+ */
+const HARM_NODES = [
+  [],
+  [12],
+  [7, 19],
+  [5, 12, 24],
+  [4, 9, 16],
+  [3, 7, 12, 19],
+  [3, 6, 10, 15, 22],
+  [2, 5, 8, 12, 17, 24],
+];
+
+// Marcadores visuales del mástil (puntos incrustados)
+const FRET_MARKERS = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
+
+// ════════════════════════════════════════════════════════════════
+// ESTADO DE LA APLICACIÓN
+// ════════════════════════════════════════════════════════════════
+const state = {
+  stringIdx: 1,       // 0=E2 … 5=E4
+  fret: 0,
+  mode: 'fret',       // 'fret' | 'harmonic'
+  harmonicsActive: Array(NUM_HARMONICS).fill(true),
+  // Amplitudes iniciales: serie 1/k (Fourier de cuerda pulsada)
+  amplitudes: [1.0, 0.50, 1/3, 0.25, 0.20, 1/6, 1/7, 0.125].map(v => parseFloat(v.toFixed(3))),
+  viewMode: 'resultante',
+  volume: 0.7,
+  playing: false,
+  animPhase: 0,
+};
+
+// ════════════════════════════════════════════════════════════════
+// FUNCIONES DE CÁLCULO FÍSICO
+// ════════════════════════════════════════════════════════════════
+function getF0() {
+  return parseFloat(document.getElementById('hz-input').value) || STRINGS[state.stringIdx].freq;
+}
+
+/**
+ * Convierte una frecuencia (Hz) al nombre de nota musical más cercana.
+ * Referencia: A4 = 440 Hz, escala de 12 tonos igual (12-TET).
+ * Devuelve p.ej. "A4", "F#3", "C5".
+ */
+function freqToNoteName(freq) {
+  if (!freq || freq <= 0) return '—';
+  const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  // Semitonos desde A4 (MIDI 69)
+  const semis  = Math.round(12 * Math.log2(freq / 440));
+  const midiN  = 69 + semis;          // número MIDI de la nota
+  const octave = Math.floor(midiN / 12) - 1;
+  const note   = NOTE_NAMES[((midiN % 12) + 12) % 12];
+  return note + octave;
+}
+
+/**
+ * Frecuencia base según modo:
+ * — Traste: f₀ · (2^(1/12))^n  (12-TET, acortamiento de cuerda)
+ * — Armónico: f₀ inalterada (modos normales sobre cuerda completa)
+ */
+function getFbase() {
+  const f0 = getF0();
+  if (state.mode === 'fret') return f0 * Math.pow(2, state.fret / 12);
+  return f0;
+}
+
+/** Suma de amplitudes activas para normalizar el osciloscopio */
+function getMaxActiveAmp() {
+  const s = state.harmonicsActive.reduce(
+    (acc, on, k) => on ? acc + state.amplitudes[k] : acc, 0
+  );
+  return s > 0 ? s : 1;
+}
+
+// ════════════════════════════════════════════════════════════════
+// CONSTRUCCIÓN DE COMPONENTES UI
+// ════════════════════════════════════════════════════════════════
+function buildStringsList() {
+  const el = document.getElementById('strings-list');
+  el.innerHTML = '';
+  STRINGS.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'string-btn' + (i === state.stringIdx ? ' active' : '');
+    btn.innerHTML = `<span class="str-id">${s.id}</span><span class="str-name">${s.name}</span><span class="str-freq">${s.freq.toFixed(2)}</span>`;
+    btn.onclick = () => {
+      state.stringIdx = i;
+      document.getElementById('hz-input').value = s.freq.toFixed(2);
+      state.fret = 0;
+      fullUpdate();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function buildHarmonicButtons() {
+  const el = document.getElementById('harm-btns');
+  el.innerHTML = '';
+  const labels = ['FUND.', '2°', '3°', '4°', '5°', '6°', '7°', '8°'];
+  for (let k = 0; k < NUM_HARMONICS; k++) {
+    const btn = document.createElement('button');
+    btn.className = 'harm-btn' + (state.harmonicsActive[k] ? ` active-k${k+1}` : '');
+    btn.id = `hbtn-${k}`;
+    btn.innerHTML = `
+      <div class="harm-dot" style="background:${K_COLORS[k]}"></div>
+      <div class="harm-label">k<sub>${k+1}</sub></div>
+      <div class="harm-sub">${labels[k]}</div>`;
+    btn.onclick = () => {
+      state.harmonicsActive[k] = !state.harmonicsActive[k];
+      updateHarmonicBtns();
+      updateAudio();
+      drawNeck();
+      updateRightPanel();
+    };
+    el.appendChild(btn);
+  }
+}
+
+function buildAmpSliders() {
+  const el = document.getElementById('amp-sliders');
+  el.innerHTML = '';
+  for (let k = 0; k < NUM_HARMONICS; k++) {
+    const row = document.createElement('div');
+    row.className = 'amp-row';
+    row.innerHTML = `
+      <span class="amp-label" style="color:${K_COLORS[k]}">A<sub>${k+1}</sub></span>
+      <input type="range" class="amp-slider" min="0" max="1" step="0.01" value="${state.amplitudes[k]}"
+             id="amp-${k}" style="accent-color:${K_COLORS[k]}" />
+      <span class="amp-val" id="amp-val-${k}">${state.amplitudes[k].toFixed(2)}</span>`;
+    el.appendChild(row);
+    el.querySelector(`#amp-${k}`).addEventListener('input', (e) => {
+      state.amplitudes[k] = parseFloat(e.target.value);
+      document.getElementById(`amp-val-${k}`).textContent = state.amplitudes[k].toFixed(2);
+      updateAudio();
+      updateRightPanel();
+    });
+  }
+}
+
+function buildOscLegend() {
+  const el = document.getElementById('osc-legend');
+  el.innerHTML = '';
+  for (let k = 0; k < NUM_HARMONICS; k++) {
+    const item = document.createElement('div');
+    item.className = 'leg-item';
+    item.innerHTML = `<div class="leg-line" style="background:${K_COLORS[k]};border-top:2px dashed ${K_COLORS[k]}"></div><span style="color:${K_COLORS[k]}">A${k+1}</span>`;
+    el.appendChild(item);
+  }
+  const res = document.createElement('div');
+  res.className = 'leg-item';
+  res.innerHTML = `<div class="leg-line" style="background:#00f5a0"></div><span style="color:#00f5a0">y(t)</span>`;
+  el.appendChild(res);
+}
+
+// ════════════════════════════════════════════════════════════════
+// CANVAS — MÁSTIL (NECK)
+// ════════════════════════════════════════════════════════════════
+function drawNeck() {
+  const canvas = document.getElementById('neck-canvas');
+  canvas.width = canvas.offsetWidth;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const LM = 42, RM = 5, TM = 18, BM = 28;
+  const neckW = W - LM - RM, neckH = H - TM - BM;
+  const fretW = neckW / 24;
+  const strH = neckH / 5;   // espacio entre cuerdas (5 intervalos para 6 cuerdas)
+
+  // Fondo total
+  ctx.fillStyle = '#030810';
+  ctx.fillRect(0, 0, W, H);
+
+  // Cuerpo del mástil (gradiente lateral)
+  const fbGrad = ctx.createLinearGradient(LM, 0, LM + neckW, 0);
+  fbGrad.addColorStop(0, '#08131f');
+  fbGrad.addColorStop(0.5, '#060f1c');
+  fbGrad.addColorStop(1, '#04090f');
+  ctx.fillStyle = fbGrad;
+  ctx.fillRect(LM, TM, neckW, neckH);
+
+  // Marcadores de posición (incrustados en el diapasón)
+  FRET_MARKERS.forEach(f => {
+    const x = LM + (f - 0.5) * fretW;
+    const markerColor = '#0e2035';
+    if (f === 12 || f === 24) {
+      [1.5, 3.5].forEach(row => {
+        const y = TM + row * strH;
+        ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = markerColor; ctx.fill();
+      });
+    } else {
+      ctx.beginPath(); ctx.arc(x, TM + 2.5 * strH, 5, 0, Math.PI * 2);
+      ctx.fillStyle = markerColor; ctx.fill();
+    }
+  });
+
+  // Trastes (líneas verticales)
+  for (let f = 0; f <= 24; f++) {
+    const x = LM + f * fretW;
+    ctx.beginPath(); ctx.moveTo(x, TM); ctx.lineTo(x, TM + neckH);
+    if (f === 0) {
+      // Cejilla (nut) — más gruesa y brillante
+      ctx.strokeStyle = '#6090b0';
+      ctx.lineWidth = 4;
+    } else {
+      ctx.strokeStyle = f % 12 === 0 ? '#243a55' : '#162840';
+      ctx.lineWidth = 1;
+    }
+    ctx.stroke();
+
+    // Numeración de trastes destacados
+    if (f > 0 && [1,3,5,7,9,12,15,17,19,21,24].includes(f)) {
+      ctx.fillStyle = (f === 12 || f === 24) ? '#2a4a70' : '#1e3858';
+      ctx.font = `bold 9px JetBrains Mono`;
+      ctx.textAlign = 'center';
+      ctx.fillText(f, LM + (f - 0.5) * fretW, H - 7);
+    }
+  }
+
+  /*
+   * CUERDAS
+   * El mástil muestra E4 (más aguda) arriba (s=0) y E2 (más grave) abajo (s=5).
+   * state.stringIdx usa convención 0=E2 … 5=E4 (orden de la lista del panel).
+   * Conversión al índice visual del canvas: canvasRow = 5 − state.stringIdx
+   */
+  const strNames  = ['E4', 'B3', 'G3', 'D3', 'A2', 'E2'];
+  for (let s = 0; s < 6; s++) {
+    const y = TM + s * strH;
+    const canvasActiveRow = 5 - state.stringIdx;  // ← CORRECCIÓN de índice
+    const isActive = s === canvasActiveRow;
+
+    // Grosor de cuerda: E4 más delgada (s=0 → 0.8px), E2 más gruesa (s=5 → 2.8px)
+    const thickness = 0.8 + (s / 5) * 2.0;
+
+    // Glow en cuerda activa
+    if (isActive) {
+      ctx.save();
+      ctx.shadowColor = '#00f5a0';
+      ctx.shadowBlur = 10;
+    }
+    ctx.beginPath(); ctx.moveTo(LM, y); ctx.lineTo(W - RM, y);
+    ctx.strokeStyle = isActive
+      ? 'rgba(0,245,160,0.6)'
+      : `rgba(160,210,255,${0.12 + s * 0.04})`;
+    ctx.lineWidth = thickness;
+    ctx.stroke();
+    if (isActive) ctx.restore();
+
+    // Etiqueta de cuerda (izquierda del mástil)
+    ctx.fillStyle = isActive ? '#00f5a0' : '#2a4060';
+    ctx.font = isActive ? 'bold 11px Rajdhani' : '10px Rajdhani';
+    ctx.textAlign = 'right';
+    ctx.fillText(strNames[s], LM - 6, y + 4);
+  }
+
+  // Nodos de armónicos (solo en modo ARMÓNICO y solo sobre la cuerda activa)
+  if (state.mode === 'harmonic') {
+    const activeRow = 5 - state.stringIdx;  // ← CORRECCIÓN
+    const yNode = TM + activeRow * strH;
+    HARM_NODES.forEach((nodes, k) => {
+      if (!state.harmonicsActive[k] || nodes.length === 0) return;
+      nodes.forEach(f => {
+        if (f < 1 || f > 24) return;
+        const x = LM + (f - 0.5) * fretW;
+        // Glow exterior
+        ctx.save();
+        ctx.shadowColor = K_COLORS[k];
+        ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(x, yNode, 6, 0, Math.PI * 2);
+        ctx.fillStyle = K_COLORS[k] + 'aa'; ctx.fill();
+        ctx.restore();
+        // Borde
+        ctx.beginPath(); ctx.arc(x, yNode, 6, 0, Math.PI * 2);
+        ctx.strokeStyle = K_COLORS[k]; ctx.lineWidth = 1.5; ctx.stroke();
+      });
+    });
+  }
+
+  // Indicador de traste activo (punto verde en la cuerda seleccionada)
+  if (state.fret > 0) {
+    const xFret = LM + (state.fret - 0.5) * fretW;
+    const yFret = TM + (5 - state.stringIdx) * strH;  // ← CORRECCIÓN de índice
+    ctx.save();
+    ctx.shadowColor = '#00f5a0'; ctx.shadowBlur = 22;
+    ctx.beginPath(); ctx.arc(xFret, yFret, 11, 0, Math.PI * 2);
+    ctx.fillStyle = '#00f5a0'; ctx.fill();
+    ctx.restore();
+    // Centro blanco
+    ctx.beginPath(); ctx.arc(xFret, yFret, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+  }
+}
+
+
+/*
+ * Interacción con el mástil (mouse y touch):
+ * — Actualiza TRASTE (eje X) y CUERDA (eje Y).
+ * — Soporta click (desktop) y touchend (móvil/tablet, sin delay de 300 ms).
+ */
+function handleNeckInteraction(clientX, clientY) {
+  const canvas = document.getElementById('neck-canvas');
+  const rect   = canvas.getBoundingClientRect();
+  const x      = clientX - rect.left;
+  const y      = clientY - rect.top;
+  const W = canvas.offsetWidth, H = canvas.height;
+  const LM = 42, RM = 5, TM = 18, BM = 28;
+  const neckW = W - LM - RM;
+  const strH  = (H - TM - BM) / 5;
+
+  if (x > W - RM) return;
+
+  // Zona del nut (x ≤ LM) → fret 0; resto → fórmula + 1
+  let fret;
+  if (x <= LM) {
+    fret = 0;
+  } else {
+    fret = Math.floor((x - LM) / (neckW / 24)) + 1;
+    if (fret > 24) return;
+  }
+
+  const canvasRow = Math.round((y - TM) / strH);
+  if (canvasRow < 0 || canvasRow > 5) return;
+
+  state.fret = fret;
+
+  const newStringIdx = 5 - canvasRow;   // canvasRow 0=E4 … 5=E2
+  if (newStringIdx >= 0 && newStringIdx < STRINGS.length) {
+    state.stringIdx = newStringIdx;
+    document.getElementById('hz-input').value = STRINGS[state.stringIdx].freq.toFixed(2);
+  }
+
+  fullUpdate();
+  doPluck();
+}
+
+// Click (desktop / mouse)
+document.getElementById('neck-canvas').addEventListener('click', (e) => {
+  handleNeckInteraction(e.clientX, e.clientY);
+});
+
+// Touch (móvil / tablet) — sin delay de 300 ms
+document.getElementById('neck-canvas').addEventListener('touchend', (e) => {
+  e.preventDefault();   // evita el click sintético y el scroll accidental
+  const t = e.changedTouches[0];
+  handleNeckInteraction(t.clientX, t.clientY);
+}, { passive: false });
+
+
+// ════════════════════════════════════════════════════════════════
+// CANVAS — OSCILOSCOPIO (loop de animación)
+// ════════════════════════════════════════════════════════════════
+let animId = null;
+function startOscAnim() {
+  if (animId) return;
+  (function loop() {
+    drawOscilloscope();
+    state.animPhase += 0.0008;
+    animId = requestAnimationFrame(loop);
+  })();
+}
+
+function drawOscilloscope() {
+  const canvas = document.getElementById('osc-canvas');
+  canvas.width  = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight || 400;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  ctx.fillStyle = '#04080f'; ctx.fillRect(0, 0, W, H);
+
+  // Cuadrícula de fondo
+  const gx = 20, gy = 10;
+  ctx.strokeStyle = '#0a1a28'; ctx.lineWidth = 1;
+  for (let i = 0; i <= gx; i++) {
+    ctx.beginPath(); ctx.moveTo(i * W / gx, 0); ctx.lineTo(i * W / gx, H); ctx.stroke();
+  }
+  for (let j = 0; j <= gy; j++) {
+    ctx.beginPath(); ctx.moveTo(0, j * H / gy); ctx.lineTo(W, j * H / gy); ctx.stroke();
+  }
+  // Línea central (eje t)
+  ctx.strokeStyle = '#0f2a44'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+
+  const fbase = getFbase();
+  const cycles = 4;
+  // Normalización: dividir entre la suma de amplitudes activas para mantener la onda en pantalla
+  const maxAmp = getMaxActiveAmp();
+
+  if (state.viewMode === 'individual') {
+    const sep = H * 0.50;
+
+    // Línea divisoria
+    ctx.strokeStyle = '#102540'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(0, sep); ctx.lineTo(W, sep); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Líneas de centro para cada mitad
+    ctx.strokeStyle = '#0c1e33'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, sep * 0.5); ctx.lineTo(W, sep * 0.5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, sep + (H - sep) * 0.5); ctx.lineTo(W, sep + (H - sep) * 0.5); ctx.stroke();
+
+    // Resultante (mitad superior)
+    ctx.strokeStyle = '#00f5a0'; ctx.lineWidth = 2.5;
+    ctx.shadowColor = '#00f5a0'; ctx.shadowBlur = 6;
+    ctx.beginPath();
+    for (let px = 0; px < W; px++) {
+      const t = (px / W) * cycles / fbase + state.animPhase;
+      let ySum = 0;
+      for (let k = 0; k < NUM_HARMONICS; k++) {
+        if (state.harmonicsActive[k])
+          ySum += state.amplitudes[k] * Math.sin(2 * Math.PI * (k + 1) * fbase * t);
+      }
+      const sy = sep * 0.5 - (ySum / maxAmp) * sep * 0.44;
+      px === 0 ? ctx.moveTo(px, sy) : ctx.lineTo(px, sy);
+    }
+    ctx.stroke(); ctx.shadowBlur = 0;
+
+    // Armónicos individuales (mitad inferior)
+    for (let k = 0; k < NUM_HARMONICS; k++) {
+      if (!state.harmonicsActive[k]) continue;
+      ctx.strokeStyle = K_COLORS[k]; ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 3]);
+      ctx.globalAlpha = 0.80;
+      ctx.beginPath();
+      for (let px = 0; px < W; px++) {
+        const t = (px / W) * cycles / fbase + state.animPhase;
+        const yK = state.amplitudes[k] * Math.sin(2 * Math.PI * (k + 1) * fbase * t);
+        const sy = sep + (H - sep) * 0.5 - yK * (H - sep) * 0.38;
+        px === 0 ? ctx.moveTo(px, sy) : ctx.lineTo(px, sy);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    }
+
+  } else {
+    // Solo la resultante
+    ctx.strokeStyle = '#00f5a0'; ctx.lineWidth = 2.5;
+    ctx.shadowColor = '#00f5a0'; ctx.shadowBlur = 8;
+    ctx.beginPath();
+    for (let px = 0; px < W; px++) {
+      const t = (px / W) * cycles / fbase + state.animPhase;
+      let ySum = 0;
+      for (let k = 0; k < NUM_HARMONICS; k++) {
+        if (state.harmonicsActive[k])
+          ySum += state.amplitudes[k] * Math.sin(2 * Math.PI * (k + 1) * fbase * t);
+      }
+      const sy = H / 2 - (ySum / maxAmp) * H * 0.44;
+      px === 0 ? ctx.moveTo(px, sy) : ctx.lineTo(px, sy);
+    }
+    ctx.stroke(); ctx.shadowBlur = 0;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// CANVAS — ESPECTRO Y(F)  (barras equiespaciadas — armónicos enteros)
+// ════════════════════════════════════════════════════════════════
+function drawSpectrum() {
+  const canvas = document.getElementById('spectrum-canvas');
+  canvas.width = canvas.offsetWidth;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  ctx.fillStyle = '#060c18'; ctx.fillRect(0, 0, W, H);
+
+  const fbase  = getFbase();
+  const margin = 8;
+  const plotW  = W - 2 * margin;
+  // Ancho de barra proporcional al espacio disponible
+  const barW   = Math.min(20, Math.floor(plotW / (NUM_HARMONICS * 2)));
+  const step   = plotW / NUM_HARMONICS;
+
+  const maxAmp = Math.max(
+    ...state.amplitudes.filter((_, k) => state.harmonicsActive[k]),
+    0.01
+  );
+
+  for (let k = 0; k < NUM_HARMONICS; k++) {
+    const freq   = (k + 1) * fbase;
+    const amp    = state.harmonicsActive[k] ? state.amplitudes[k] : 0;
+    const barH   = (amp / maxAmp) * (H - 30);
+    // Centro de la barra en posición proporcional al número de armónico
+    const xC = margin + step * (k + 0.5);
+    const x  = xC - barW / 2;
+
+    // Relleno fantasma (indica slot aunque esté inactivo)
+    ctx.fillStyle = K_COLORS[k] + '22';
+    ctx.fillRect(x, 2, barW, H - 24);
+
+    // Barra activa con gradiente vertical
+    if (barH > 0) {
+      const g = ctx.createLinearGradient(0, H - 22 - barH, 0, H - 22);
+      g.addColorStop(0, K_COLORS[k]);
+      g.addColorStop(1, K_COLORS[k] + '55');
+      ctx.fillStyle = g;
+      // Glow suave
+      ctx.save();
+      ctx.shadowColor = K_COLORS[k];
+      ctx.shadowBlur  = 6;
+      ctx.fillRect(x, H - 22 - barH, barW, barH);
+      ctx.restore();
+    }
+
+    // Etiqueta del armónico
+    ctx.fillStyle = K_COLORS[k];
+    ctx.font = '8px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText(`k${k+1}`, xC, H - 12);
+
+    // Frecuencia en Hz
+    ctx.fillStyle = state.harmonicsActive[k] ? '#3a5a80' : '#1a3050';
+    ctx.fillText(freq.toFixed(0), xC, H - 3);
+  }
+
+  // Eje de frecuencias
+  ctx.fillStyle = '#1a3050';
+  ctx.font = '8px Rajdhani';
+  ctx.textAlign = 'center';
+  ctx.fillText('f [Hz]', W / 2, H);
+}
+
+// ════════════════════════════════════════════════════════════════
+// PANEL DERECHO — ACTUALIZACIÓN
+// ════════════════════════════════════════════════════════════════
+function updateRightPanel() {
+  const fbase = getFbase();
+  const f0    = getF0();
+  const str   = state.stringIdx >= 0 ? STRINGS[state.stringIdx] : { id: 'CUST', freq: f0 };
+
+  document.getElementById('freq-big').textContent         = fbase.toFixed(2);
+  // Badge: muestra la NOTA que está sonando (no la cuerda al aire)
+  document.getElementById('freq-string-badge').textContent = freqToNoteName(fbase);
+  document.getElementById('t-fret').textContent          = state.fret;
+  document.getElementById('t-f0').textContent            = f0.toFixed(2) + ' Hz';
+  document.getElementById('t-period').textContent        = (1000 / fbase).toFixed(3) + ' ms';
+  document.getElementById('t-mode').textContent          = state.mode === 'fret' ? 'FRET' : 'HARMONIC';
+
+  // Detalle por armónico (8 filas)
+  const el = document.getElementById('harm-detail');
+  el.innerHTML = '';
+  const maxA = Math.max(...state.amplitudes);
+  for (let k = 0; k < NUM_HARMONICS; k++) {
+    const freq   = (k + 1) * fbase;
+    const amp    = state.amplitudes[k];
+    const active = state.harmonicsActive[k];
+    const row    = document.createElement('div');
+    row.className = 'harm-detail-row';
+    row.innerHTML = `
+      <span class="hd-label" style="color:${K_COLORS[k]}">k${k+1}</span>
+      <div class="hd-bar-wrap">
+        <div class="hd-bar" style="width:${active ? (amp / maxA) * 100 : 0}%;background:${K_COLORS[k]}"></div>
+      </div>
+      <span class="hd-hz" style="color:${active ? K_COLORS[k] : '#1a3050'}">${freq.toFixed(2)} Hz</span>
+      <span class="hd-amp" style="color:${active ? '#c8d8ea' : '#1a3050'}">${amp.toFixed(2)}</span>`;
+    el.appendChild(row);
+  }
+
+  // Ecuación activa (KaTeX)
+  try {
+    if (typeof katex !== 'undefined') {
+      let eqStr;
+      if (state.mode === 'fret' && state.fret > 0) {
+        eqStr = `f_{${state.fret}} = ${f0.toFixed(2)} \\cdot \\left(2^{1/12}\\right)^{${state.fret}} = ${fbase.toFixed(2)}\\,\\text{Hz}`;
+      } else if (state.mode === 'harmonic') {
+        eqStr = `f_k = k \\cdot f_0 = k \\cdot ${fbase.toFixed(2)}\\,\\text{Hz}`;
+      } else {
+        eqStr = `f_0 = ${fbase.toFixed(2)}\\,\\text{Hz}`;
+      }
+      katex.render(eqStr, document.getElementById('eq-render'), {
+        throwOnError: false, displayMode: true, output: 'html'
+      });
+    }
+  } catch(e) {}
+
+  drawSpectrum();
+}
+
+// ════════════════════════════════════════════════════════════════
+// WEB AUDIO API — SÍNTESIS ADITIVA
+// ════════════════════════════════════════════════════════════════
+let audioCtx = null, masterGain = null, oscillators = [], gainNodes = [];
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = state.volume;
+  masterGain.connect(audioCtx.destination);
+}
+
+function startAudio() {
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  stopAudio(false);
+  const fbase = getFbase();
+  oscillators = []; gainNodes = [];
+  for (let k = 0; k < NUM_HARMONICS; k++) {
+    const osc  = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = (k + 1) * fbase;
+    gain.gain.value = state.harmonicsActive[k] ? state.amplitudes[k] * 0.12 : 0;
+    osc.connect(gain); gain.connect(masterGain);
+    osc.start();
+    oscillators.push(osc); gainNodes.push(gain);
+  }
+  state.playing = true;
+  document.getElementById('btn-stop').innerHTML = '■ STOP';
+  document.getElementById('btn-stop').classList.add('playing');
+}
+
+function stopAudio(updateState = true) {
+  oscillators.forEach(o => { try { o.stop(); } catch(e) {} });
+  oscillators = []; gainNodes = [];
+  if (updateState) {
+    state.playing = false;
+    document.getElementById('btn-stop').innerHTML = '▶ PLAY';
+    document.getElementById('btn-stop').classList.remove('playing');
+  }
+}
+
+function updateAudio() {
+  if (!state.playing || !audioCtx) return;
+  const fbase = getFbase();
+  oscillators.forEach((osc, k) => {
+    osc.frequency.setTargetAtTime((k + 1) * fbase, audioCtx.currentTime, 0.02);
+    gainNodes[k].gain.setTargetAtTime(
+      state.harmonicsActive[k] ? state.amplitudes[k] * 0.12 : 0,
+      audioCtx.currentTime, 0.02
+    );
+  });
+}
+
+function togglePlay() {
+  if (state.playing) { stopAudio(); } else { startAudio(); }
+}
+
+// ─── ENVOLVENTE ADSR — PUNTEO DE CUERDA ────────────────────────
+function doPluck() {
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  const now        = audioCtx.currentTime;
+  const fbase      = getFbase();
+  const decayTime  = 2.2;
+  const attackTime = 0.005; // 5 ms de ataque
+
+
+  // Feedback visual: anillo pulsante en el botón
+  const btn = document.getElementById('btn-pluck');
+  btn.classList.remove('plucking');
+  void btn.offsetWidth; // reflow para reiniciar animación
+  btn.classList.add('plucking');
+  setTimeout(() => btn.classList.remove('plucking'), 500);
+
+  // Animación de la barra de decaimiento
+  animateDecayBar(decayTime);
+
+  for (let k = 0; k < NUM_HARMONICS; k++) {
+    if (!state.harmonicsActive[k]) continue;
+
+    const osc  = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = (k + 1) * fbase;
+
+    // Las amplitudes de armónicos más altos decaen más rápido (comportamiento físico)
+    const kDecay    = decayTime / (1 + k * 0.3);
+    const peakGain  = state.amplitudes[k] * state.volume * 0.28;
+
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(peakGain, now + attackTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + kDecay);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + kDecay + 0.05);
+  }
+}
+
+/** Anima la barra de decaimiento en el panel derecho */
+function animateDecayBar(duration) {
+  const bar = document.getElementById('decay-bar');
+  bar.style.transition = 'none';
+  bar.style.width = '100%';
+  // Doble requestAnimationFrame para asegurar que el navegador aplica el estado inicial
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      bar.style.transition = `width ${duration}s linear`;
+      bar.style.width = '0%';
+    });
+  });
+}
+
+// Control de volumen maestro
+document.getElementById('vol-slider').addEventListener('input', (e) => {
+  state.volume = parseFloat(e.target.value);
+  document.getElementById('vol-val').textContent = state.volume.toFixed(2);
+  if (masterGain) masterGain.gain.setTargetAtTime(state.volume, audioCtx.currentTime, 0.01);
+});
+
+// Modo armónico eliminado — funciones conservadas como stubs por compatibilidad
+function toggleMode() { /* desactivado */ }
+function updateModeUI() {
+  const el = document.getElementById('t-mode');
+  if (el) el.textContent = 'FRET';
+}
+
+
+function updateHarmonicBtns() {
+  for (let k = 0; k < NUM_HARMONICS; k++) {
+    const btn = document.getElementById(`hbtn-${k}`);
+    btn.className = 'harm-btn' + (state.harmonicsActive[k] ? ` active-k${k+1}` : '');
+  }
+}
+
+function setViewMode(m) {
+  state.viewMode = m;
+  document.getElementById('btn-individual').classList.toggle('active', m === 'individual');
+  document.getElementById('btn-resultante').classList.toggle('active', m === 'resultante');
+}
+
+function setCustomHz() {
+  state.fret = 0;
+  state.stringIdx = -1;
+  fullUpdate();
+}
+
+function clearSelection() { state.fret = 0; fullUpdate(); }
+
+function resetAll() {
+  state.stringIdx   = 1;
+  state.fret        = 0;
+  state.mode        = 'fret';
+  state.harmonicsActive = Array(NUM_HARMONICS).fill(true);
+  state.amplitudes  = [1.0, 0.50, 1/3, 0.25, 0.20, 1/6, 1/7, 0.125].map(v => parseFloat(v.toFixed(3)));
+  state.viewMode    = 'resultante';
+  document.getElementById('hz-input').value = '110.00';
+  stopAudio();
+  buildStringsList(); buildHarmonicButtons(); buildAmpSliders();
+  updateModeUI(); setViewMode('resultante');
+  fullUpdate();
+}
+
+// ════════════════════════════════════════════════════════════════
+// RENDERIZADO KATEX
+// ════════════════════════════════════════════════════════════════
+function renderKaTeX() {
+  if (typeof katex === 'undefined') return;
+
+  // Fórmula del osciloscopio (encabezado) — CORRECCIÓN: \pi no \Pi
+  try {
+    katex.render(
+      'y(t) = \\sum_{k=1}^{8} A_k \\sin(2\\pi k f_{\\text{base}}\\, t)',
+      document.getElementById('osc-formula-katex'),
+      { throwOnError: false, displayMode: false }
+    );
+  } catch(e) {}
+
+  // Modal — ecuación 1: temperamento igual
+  try {
+    katex.render(
+      'f_n = f_0 \\cdot \\left(2^{1/12}\\right)^n',
+      document.getElementById('eq-modal-1'),
+      { throwOnError: false, displayMode: true }
+    );
+  } catch(e) {}
+
+  // Modal — ecuación 2: armónicos
+  try {
+    katex.render(
+      'f_k = k \\cdot f_{\\text{base}},\\quad k \\in \\{1,2,\\ldots,8\\}',
+      document.getElementById('eq-modal-2'),
+      { throwOnError: false, displayMode: true }
+    );
+  } catch(e) {}
+
+  // Modal — ecuación 3: síntesis aditiva
+  try {
+    katex.render(
+      'y(t) = \\sum_{k=1}^{8} A_k \\sin(2\\pi k f_{\\text{base}}\\, t)',
+      document.getElementById('eq-modal-3'),
+      { throwOnError: false, displayMode: true }
+    );
+  } catch(e) {}
+
+  // Variables de la tabla
+  try { katex.render('f_0', document.getElementById('em-f0'), { throwOnError: false }); } catch(e) {}
+  try { katex.render('n',   document.getElementById('em-n'),  { throwOnError: false }); } catch(e) {}
+  try { katex.render('\\alpha = 2^{1/12}', document.getElementById('em-alpha'), { throwOnError: false }); } catch(e) {}
+
+  // Actualizar ecuación del panel derecho
+  updateRightPanel();
+}
+
+// ════════════════════════════════════════════════════════════════
+// MODAL DE AYUDA
+// ════════════════════════════════════════════════════════════════
+function openHelp()  { document.getElementById('modal-overlay').classList.add('open'); }
+function closeHelp() { document.getElementById('modal-overlay').classList.remove('open'); }
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeHelp();
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeHelp(); });
+
+// ════════════════════════════════════════════════════════════════
+// ACTUALIZACIÓN GLOBAL
+// ════════════════════════════════════════════════════════════════
+function fullUpdate() {
+  const str = state.stringIdx >= 0 ? STRINGS[state.stringIdx] : { id: 'CUST', name: '?', freq: getF0() };
+  document.getElementById('neck-title').textContent    = `MÁSTIL DE GUITARRA — TRASTE ${state.fret}`;
+  document.getElementById('active-badge').textContent  = str.id;
+  document.getElementById('freq-string-badge').textContent = str.id;
+  buildStringsList();
+  updateModeUI();
+  updateHarmonicBtns();
+  updateRightPanel();
+  updateAudio();
+  drawNeck();
+}
+
+// ════════════════════════════════════════════════════════════════
+// RESIZE
+// ════════════════════════════════════════════════════════════════
+window.addEventListener('resize', () => { drawNeck(); drawSpectrum(); });
+
+// ════════════════════════════════════════════════════════════════
+// INICIALIZACIÓN
+// ════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  buildStringsList();
+  buildHarmonicButtons();
+  buildAmpSliders();
+  buildOscLegend();
+  updateModeUI();
+  startOscAnim();
+  updateRightPanel();
+  drawNeck();
+  drawSpectrum();
+
+  // KaTeX carga con 'defer'; esperamos a que esté disponible
+  const waitKaTeX = (attempts = 0) => {
+    if (typeof katex !== 'undefined') {
+      renderKaTeX();
+    } else if (attempts < 20) {
+      setTimeout(() => waitKaTeX(attempts + 1), 100);
+    }
+  };
+  setTimeout(() => waitKaTeX(), 200);
+});
+</script>
+</body>
+</html>
