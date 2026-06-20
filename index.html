@@ -643,8 +643,6 @@
                 <i data-lucide="music-4" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 text-slate-800 opacity-20 pointer-events-none"></i>
                 
                 <div class="relative z-10">
-                    <h2 class="text-lg md:text-2xl font-bold text-physics mb-6 md:mb-8 uppercase tracking-widest"> </h2>
-                    
                     <i data-lucide="quote" class="w-8 h-8 md:w-10 md:h-10 text-slate-400 mx-auto mb-4 md:mb-6 opacity-70"></i>
                     
                     <blockquote class="text-xl md:text-3xl font-serif text-white leading-relaxed mb-6 md:mb-8 italic px-4">
@@ -653,7 +651,7 @@
                     
                     <p class="text-base md:text-xl text-slate-300 font-medium mb-10 md:mb-12">
                         — Gottfried Wilhelm Leibniz <br>
-                        <span class="text-xs md:text-sm font-light text-slate-500">(Filósofo y matemático)</span>
+                        <span class="text-xs md:text-sm font-light text-slate-300">(Filósofo y matemático)</span>
                     </p>
                     
                     <div class="pt-6 md:pt-8 border-t border-slate-700/50">
@@ -664,7 +662,7 @@
                         
                         <!-- Sección de Anexo Interactivo -->
                         <div class="inline-block mt-2">
-                            <p class="text-xs text-slate-500 uppercase tracking-widest mb-3 font-semibold">Anexo Interactivo</p>
+                            <p class="text-xs text-slate-200 uppercase tracking-widest mb-3 font-semibold">Anexo Interactivo</p>
                             <a href="mastilGuitarra.html" target="_blank" class="inline-flex items-center px-5 py-3 md:px-6 md:py-4 bg-slate-800/80 hover:bg-slate-700 border border-slate-600 text-music hover:text-amber-400 rounded-xl transition-all shadow-lg hover:scale-105 active:scale-95 group">
                                 <i data-lucide="guitar" class="w-5 h-5 md:w-6 md:h-6 mr-3"></i>
                                 <span class="font-bold text-sm md:text-base">Simulación de Mástil de Guitarra</span>
@@ -678,8 +676,8 @@
 
     </main>
 
-    <!-- Controles de navegación inferior (Fijos e Intocables por el Scroll) -->
-    <footer class="absolute bottom-0 left-0 w-full p-4 md:p-6 flex justify-between items-center z-50 pointer-events-none">
+    <!-- Controles de navegación superiores (Fijos e Intocables por el Scroll) -->
+    <div class="absolute top-2 left-0 w-full p-4 md:p-6 flex justify-between items-center z-50 pointer-events-none">
         <div class="pointer-events-auto">
             <button id="btn-prev" class="bg-slate-800/90 hover:bg-slate-700 text-white p-3 rounded-full backdrop-blur-md transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-slate-600 shadow-lg active:scale-95">
                 <i data-lucide="chevron-left" class="w-5 h-5 md:w-6 md:h-6"></i>
@@ -695,7 +693,7 @@
                 <i data-lucide="chevron-right" class="w-5 h-5 md:w-6 md:h-6"></i>
             </button>
         </div>
-    </footer>
+    </div>
 
     <!-- Script de lógica de navegación y dibujo SVG -->
     <script>
