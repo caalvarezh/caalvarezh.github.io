@@ -4,16 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Física de la Música | Presentación</title>
-    
-    <!-- Tailwind CSS -->
+
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;1,300&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    
-    <!-- MathJax para las fórmulas -->
+
     <script>
         MathJax = {
             tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
@@ -22,7 +19,6 @@
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <script>
@@ -111,7 +107,7 @@
             overflow-y: hidden;
             padding-bottom: 0.25rem;
         }
-        
+
         @media (min-width: 768px) {
             .math-display {
                 font-size: 1.5rem;
@@ -119,7 +115,7 @@
                 overflow-x: visible;
             }
         }
-        
+
         .math-display.music-color {
             color: #fbbf24; /* Amber 400 */
         }
@@ -186,15 +182,12 @@
 </head>
 <body class="bg-animated w-screen h-screen relative flex flex-col font-sans antialiased selection:bg-physics selection:text-white">
 
-    <!-- Barra de progreso superior -->
     <div class="absolute top-0 left-0 w-full h-1.5 bg-slate-800 z-50">
         <div id="progress-bar" class="h-full bg-gradient-to-r from-physics to-music w-0 transition-all duration-500 ease-out"></div>
     </div>
 
-    <!-- Contenedor Principal de Diapositivas -->
     <main id="slides-container" class="relative flex-1 w-full max-w-6xl mx-auto h-full overflow-hidden">
-        
-        <!-- Diapositiva 1 -->
+
         <section class="slide active">
             <div class="glass-card p-8 md:p-20 rounded-3xl max-w-4xl w-full text-center">
                 <div class="mb-4 md:mb-6 flex justify-center space-x-4 text-physics">
@@ -214,7 +207,6 @@
             </div>
         </section>
 
-        <!-- Diapositiva 2 -->
         <section class="slide">
             <div class="glass-card p-6 md:p-16 rounded-3xl max-w-5xl w-full">
                 <h2 class="text-2xl md:text-4xl font-serif font-bold text-physics mb-6 md:mb-8 flex items-center">
@@ -224,15 +216,15 @@
                     <div>
                         <ul class="space-y-4 md:space-y-6 text-base md:text-xl text-slate-300 leading-relaxed">
                             <li class="flex items-start">
-                                <i data-lucide="check-circle-2" class="mr-3 w-5 h-5 md:w-6 md:h-6 text-physics shrink-0 mt-1"></i> 
+                                <i data-lucide="check-circle-2" class="mr-3 w-5 h-5 md:w-6 md:h-6 text-physics shrink-0 mt-1"></i>
                                 <span>Una cuerda sujeta en ambos extremos vibra por la superposición de ondas incidentes y reflejadas.</span>
                             </li>
                             <li class="flex items-start">
-                                <i data-lucide="check-circle-2" class="mr-3 w-5 h-5 md:w-6 md:h-6 text-physics shrink-0 mt-1"></i> 
+                                <i data-lucide="check-circle-2" class="mr-3 w-5 h-5 md:w-6 md:h-6 text-physics shrink-0 mt-1"></i>
                                 <span>Se forman puntos sin movimiento (<strong class="text-white">Nodos</strong>) y puntos de máxima oscilación (<strong class="text-white">Vientres</strong>).</span>
                             </li>
                             <li class="flex items-start">
-                                <i data-lucide="check-circle-2" class="mr-3 w-5 h-5 md:w-6 md:h-6 text-physics shrink-0 mt-1"></i> 
+                                <i data-lucide="check-circle-2" class="mr-3 w-5 h-5 md:w-6 md:h-6 text-physics shrink-0 mt-1"></i>
                                 <span>La velocidad de propagación ($v$) depende de la tensión ($T$) y la densidad lineal de masa ($\mu$).</span>
                             </li>
                         </ul>
@@ -245,12 +237,11 @@
             </div>
         </section>
 
-        <!-- Diapositiva 3 -->
         <section class="slide">
             <div class="glass-card p-6 md:p-16 rounded-3xl max-w-4xl w-full text-center">
                 <h2 class="text-2xl md:text-4xl font-serif font-bold text-physics mb-6 md:mb-8">La Ecuación de la Frecuencia</h2>
                 <p class="text-base md:text-xl text-slate-300 mb-6 md:mb-8">Dado que para el modo fundamental la longitud de onda es $\lambda = 2L$, la frecuencia de cualquier armónico $n$ es:</p>
-                
+
                 <div class="bg-slate-900/80 py-6 px-4 md:py-8 md:px-12 rounded-2xl border-l-4 border-physics inline-block mb-8 md:mb-10 w-full md:w-auto">
                     <div class="math-display">$$f_n = \frac{n}{2L} \sqrt{\frac{T}{\mu}}$$</div>
                 </div>
@@ -262,7 +253,6 @@
             </div>
         </section>
 
-        <!-- Diapositiva 4 -->
         <section class="slide">
             <div class="glass-card p-6 md:p-16 rounded-3xl max-w-5xl w-full">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
@@ -287,14 +277,12 @@
             </div>
         </section>
 
-        <!-- Diapositiva 5 (OSCILOSCOPIOS SVG RESPONSIVOS) -->
         <section class="slide">
             <div class="glass-card p-6 md:p-12 rounded-3xl max-w-5xl w-full">
                 <h2 class="text-2xl md:text-3xl font-serif font-bold text-music mb-4 md:mb-6 text-center">Los Intervalos Musicales Justos</h2>
                 <p class="text-sm md:text-base text-center text-slate-300 mb-6 md:mb-8">Superposición de la Fundamental (Verde) con el Intervalo correspondiente en el osciloscopio temporal.</p>
-                
+
                 <div class="space-y-4">
-                    <!-- Octava -->
                     <div class="flex flex-col md:flex-row items-center p-4 bg-slate-800/50 rounded-xl border border-slate-700">
                         <div class="flex flex-col md:flex-row items-center justify-center md:justify-start w-full md:w-5/12 mb-4 md:mb-0 text-center md:text-left">
                             <div class="text-xl md:text-2xl font-bold text-white w-16 text-center">2:1</div>
@@ -309,7 +297,6 @@
                             <span class="text-[10px] md:text-xs text-slate-400 mt-1 text-center">Fundamental vs Octava (Nodos coincidentes en centro y extremos)</span>
                         </div>
                     </div>
-                    <!-- Quinta -->
                     <div class="flex flex-col md:flex-row items-center p-4 bg-slate-800/50 rounded-xl border border-slate-700">
                         <div class="flex flex-col md:flex-row items-center justify-center md:justify-start w-full md:w-5/12 mb-4 md:mb-0 text-center md:text-left">
                             <div class="text-xl md:text-2xl font-bold text-white w-16 text-center">3:2</div>
@@ -324,7 +311,6 @@
                             <span class="text-[10px] md:text-xs text-slate-400 mt-1 text-center">3 ciclos de Quinta equivalen a 2 de Fundamental</span>
                         </div>
                     </div>
-                    <!-- Cuarta -->
                     <div class="flex flex-col md:flex-row items-center p-4 bg-slate-800/50 rounded-xl border border-slate-700">
                         <div class="flex flex-col md:flex-row items-center justify-center md:justify-start w-full md:w-5/12 mb-4 md:mb-0 text-center md:text-left">
                             <div class="text-xl md:text-2xl font-bold text-white w-16 text-center">4:3</div>
@@ -343,7 +329,6 @@
             </div>
         </section>
 
-        <!-- Diapositiva 6 -->
         <section class="slide">
             <div class="glass-card p-6 md:p-16 rounded-3xl max-w-4xl w-full text-center">
                 <h2 class="text-2xl md:text-4xl font-serif font-bold text-red-400 mb-2 md:mb-4">La Coma Pitagórica</h2>
@@ -369,29 +354,27 @@
             </div>
         </section>
 
-        <!-- Diapositiva 7 -->
         <section class="slide">
             <div class="glass-card p-6 md:p-16 rounded-3xl max-w-4xl w-full text-center">
                 <h2 class="text-2xl md:text-4xl font-serif font-bold text-white mb-4 md:mb-6">El Temperamento Igual <span class="text-sm md:text-xl text-slate-300 block mt-1 md:mt-2">(Siglo XVIII)</span></h2>
-                
+
                 <p class="text-base md:text-xl text-slate-200 mb-6 md:mb-8 leading-relaxed">El sistema de compromiso: Se reparte el error matemático de forma equitativa entre los 12 semitonos de la octava para permitir la modulación armónica.</p>
-                
+
                 <div class="bg-slate-900/80 py-6 px-4 md:py-8 md:px-12 rounded-2xl border-t-4 border-b-4 border-slate-500 inline-block mb-8 md:mb-10 shadow-2xl w-full md:w-auto overflow-x-auto">
                     <p class="text-xs md:text-sm text-slate-300 uppercase tracking-wider mb-2 md:mb-4 whitespace-nowrap">Factor de Incremento Constante</p>
                     <div class="math-display text-white">$$\text{Factor} = \sqrt[12]{2} \approx 1.059463$$</div>
                 </div>
 
-                <p class="text-sm md:text-lg text-slate-300 max-w-2xl mx-auto">Sacrificamos la pureza absoluta de las fracciones naturales a cambio de viabilidad acústica. <br><span class="text-xs md:text-sm mt-2 block text-slate-400">(Ej: La Quinta pasa del $1.5000$ puro a $1.4983$).</span></p>
+                <p class="text-sm md:text-lg text-slate-300 max-w-2xl mx-auto">Sacrificamos la pureza absoluta de las fracciones naturales a cambio de viabilidad acústica. <br><span class="text-xs md:text-sm mt-2 block text-slate-200">(Ej: La Quinta pasa del $1.5000$ puro a $1.4983$).</span></p>
             </div>
         </section>
 
-        <!-- Diapositiva 8 -->
         <section class="slide">
             <div class="glass-card p-6 md:p-16 rounded-3xl max-w-6xl w-full">
                 <h2 class="text-2xl md:text-4xl font-serif font-bold text-physics mb-6 md:mb-8 flex items-center">
                     <i data-lucide="flask-conical" class="mr-3 md:mr-4 w-6 h-6 md:w-8 md:h-8"></i> El Montaje Experimental
                 </h2>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
                     <div class="space-y-4 md:space-y-6 flex flex-col justify-center">
                         <div class="bg-slate-800/50 p-4 md:p-5 rounded-xl border border-slate-700 flex items-start gap-3 md:gap-4">
@@ -416,8 +399,7 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Galería de imágenes cargadas -->
+
                     <div class="flex flex-col gap-4">
                         <div class="group rounded-2xl overflow-hidden border border-slate-700 shadow-lg flex flex-col w-full bg-slate-900/60">
                             <div class="relative h-40 md:h-56 w-full flex items-center justify-center p-3">
@@ -440,7 +422,6 @@
             </div>
         </section>
 
-        <!-- Diapositiva 9: Tabla de Resultados -->
         <section class="slide">
             <div class="glass-card p-6 md:p-12 rounded-3xl max-w-6xl w-full flex flex-col h-full md:h-auto max-h-[85vh]">
                 <h2 class="text-2xl md:text-3xl font-serif font-bold text-center text-white mb-2 shrink-0">Tabla de Resultados Esperados</h2>
@@ -459,7 +440,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Fundamental -->
                             <tr class="text-slate-300">
                                 <td class="font-semibold text-white">Al Aire</td>
                                 <td>Ninguna</td>
@@ -468,8 +448,7 @@
                                 <td>Mi ($E_4$)</td>
                                 <td>Fundamental (1:1)</td>
                             </tr>
-                            
-                            <!-- Sección PISAR (Acortamiento Físico) -->
+
                             <tr>
                                 <td colspan="6" class="bg-emerald-900/30 text-emerald-400 text-xs uppercase tracking-wider font-bold py-2 px-4 border-y border-emerald-800/50">
                                     Fase 1: Pisar (Acortamiento Físico)
@@ -500,7 +479,6 @@
                                 <td>Cuarta Justa (4:3)</td>
                             </tr>
 
-                            <!-- Sección ROZAR (Excitación Nodal) -->
                             <tr>
                                 <td colspan="6" class="bg-amber-900/30 text-amber-400 text-xs uppercase tracking-wider font-bold py-2 px-4 border-y border-amber-800/50">
                                     Fase 2: Rozar (Excitación Nodal)
@@ -533,18 +511,16 @@
                         </tbody>
                     </table>
                 </div>
-                <p class="text-xs text-slate-500 mt-4 text-center shrink-0"><i data-lucide="info" class="inline w-4 h-4 mr-1 -mt-0.5"></i> Nota: El error experimental se calculará comparando estos valores teóricos con las mediciones de la app.</p>
+                <p class="text-xs text-slate-300 mt-4 text-center shrink-0"><i data-lucide="info" class="inline w-4 h-4 mr-1 -mt-0.5"></i> Nota: El error experimental se calculará comparando estos valores teóricos con las mediciones de la app.</p>
             </div>
         </section>
 
-        <!-- Diapositiva 10 -->
         <section class="slide">
             <div class="glass-card p-6 md:p-12 rounded-3xl max-w-6xl w-full">
                 <h2 class="text-2xl md:text-4xl font-serif font-bold text-center text-white mb-2">Modificación de Condiciones de Contorno</h2>
                 <p class="text-center text-sm md:text-lg text-slate-400 mb-6 md:mb-8">Contraste físico en la marca de $L/3$</p>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-                    <!-- Pisar -->
                     <div class="bg-slate-800/80 p-6 md:p-8 rounded-2xl border-t-4 border-physics flex flex-col justify-between">
                         <div>
                             <h3 class="text-xl md:text-2xl font-bold text-physics mb-4 md:mb-6 text-center">1. "PISAR" <span class="text-sm md:text-base font-normal text-slate-300 block mt-1">(Acortamiento Físico)</span></h3>
@@ -560,7 +536,6 @@
                         </div>
                     </div>
 
-                    <!-- Rozar -->
                     <div class="bg-slate-800/80 p-6 md:p-8 rounded-2xl border-t-4 border-music flex flex-col justify-between">
                         <div>
                             <h3 class="text-xl md:text-2xl font-bold text-music mb-4 md:mb-6 text-center">2. "ROZAR" <span class="text-sm md:text-base font-normal text-slate-300 block mt-1">(Excitación Nodal)</span></h3>
@@ -579,12 +554,11 @@
             </div>
         </section>
 
-        <!-- Diapositiva 11 -->
         <section class="slide">
             <div class="glass-card p-6 md:p-16 rounded-3xl max-w-4xl w-full">
                 <h2 class="text-2xl md:text-4xl font-serif font-bold text-white mb-2 md:mb-4">Discusión de Condiciones de Frontera</h2>
                 <h3 class="text-sm md:text-xl text-emerald-400 mb-6 md:mb-8">Validación del Modelo frente a Entornos Reales</h3>
-                
+
                 <p class="text-base md:text-lg text-slate-200 mb-6 md:mb-8">La evaluación experimental evidenció una <strong>notable concordancia con los modelos teóricos</strong>, presentando márgenes de error sistemáticamente inferiores al 1%.</p>
 
                 <div class="space-y-4 md:space-y-6 mb-8 md:mb-10">
@@ -610,7 +584,6 @@
             </div>
         </section>
 
-        <!-- Diapositiva 12: Cuestionario -->
         <section class="slide">
             <div class="glass-card p-6 md:p-12 rounded-3xl max-w-4xl w-full flex flex-col h-full md:h-auto max-h-[85vh]">
                 <div class="flex items-center justify-between mb-6">
@@ -619,11 +592,9 @@
                     </h2>
                     <span id="quiz-progress" class="text-sm text-slate-400 font-medium bg-slate-800 px-3 py-1 rounded-full">Pregunta 1 de 10</span>
                 </div>
-                
-                <!-- Contenedor del Quiz con scroll si es necesario -->
+
                 <div id="quiz-container" class="flex-1 overflow-y-auto pr-2 pb-4">
-                    <!-- Las preguntas (o resultados) se inyectarán aquí vía JavaScript -->
-                </div>
+                    </div>
 
                 <div id="quiz-controls" class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center transition-opacity duration-300">
                     <button id="btn-quiz-prev" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium flex items-center">
@@ -636,31 +607,28 @@
             </div>
         </section>
 
-        <!-- Diapositiva 13: Cierre y Anexos -->
         <section class="slide">
             <div class="glass-card p-8 md:p-16 rounded-3xl max-w-4xl w-full text-center relative overflow-hidden">
-                <!-- Icono de fondo decorativo -->
                 <i data-lucide="music-4" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 text-slate-800 opacity-20 pointer-events-none"></i>
-                
+
                 <div class="relative z-10">
                     <i data-lucide="quote" class="w-8 h-8 md:w-10 md:h-10 text-slate-400 mx-auto mb-4 md:mb-6 opacity-70"></i>
-                    
+
                     <blockquote class="text-xl md:text-3xl font-serif text-white leading-relaxed mb-6 md:mb-8 italic px-4">
                         "La música es el placer que experimenta la mente humana al contar <span class="text-physics not-italic font-bold">sin darse cuenta de que está contando</span>."
                     </blockquote>
-                    
+
                     <p class="text-base md:text-xl text-slate-300 font-medium mb-10 md:mb-12">
                         — Gottfried Wilhelm Leibniz <br>
                         <span class="text-xs md:text-sm font-light text-slate-300">(Filósofo y matemático)</span>
                     </p>
-                    
+
                     <div class="pt-6 md:pt-8 border-t border-slate-700/50">
                         <h2 class="text-2xl md:text-3xl font-bold text-slate-200 mb-1 md:mb-2">¡Gracias por su atención!</h2>
                         <p class="text-sm md:text-lg text-slate-400 flex items-center justify-center gap-2 mb-8 md:mb-10">
                             <i data-lucide="messages-square" class="w-5 h-5"></i> ¿Preguntas o comentarios?
                         </p>
-                        
-                        <!-- Sección de Anexo Interactivo -->
+
                         <div class="inline-block mt-2">
                             <p class="text-xs text-slate-200 uppercase tracking-widest mb-3 font-semibold">Anexo Interactivo</p>
                             <a href="mastilGuitarra.html" target="_blank" class="inline-flex items-center px-5 py-3 md:px-6 md:py-4 bg-slate-800/80 hover:bg-slate-700 border border-slate-600 text-music hover:text-amber-400 rounded-xl transition-all shadow-lg hover:scale-105 active:scale-95 group">
@@ -676,14 +644,13 @@
 
     </main>
 
-    <!-- Controles de navegación superiores (Fijos e Intocables por el Scroll) -->
     <div class="absolute top-2 left-0 w-full p-4 md:p-6 flex justify-between items-center z-50 pointer-events-none">
         <div class="pointer-events-auto">
             <button id="btn-prev" class="bg-slate-800/90 hover:bg-slate-700 text-white p-3 rounded-full backdrop-blur-md transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-slate-600 shadow-lg active:scale-95">
                 <i data-lucide="chevron-left" class="w-5 h-5 md:w-6 md:h-6"></i>
             </button>
         </div>
-        
+
         <div class="pointer-events-auto bg-slate-800/90 px-4 md:px-6 py-2 rounded-full backdrop-blur-md border border-slate-600 shadow-lg">
             <span id="slide-counter" class="text-slate-300 font-medium tracking-widest text-sm md:text-base">1 / 13</span>
         </div>
@@ -695,7 +662,6 @@
         </div>
     </div>
 
-    <!-- Script de lógica de navegación y dibujo SVG -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Inicializar Iconos Lucide
@@ -705,21 +671,21 @@
             function drawWave(svgId, f1, f2, color1, color2) {
                 const svg = document.getElementById(svgId);
                 if (!svg) return;
-                
+
                 const width = 400;
                 const height = 80;
                 const midY = height / 2;
                 const amp = 30;
                 let path1 = `M 0 ${midY} `;
                 let path2 = `M 0 ${midY} `;
-                
+
                 let nodesHtml = '';
 
                 for(let x = 0; x <= width; x++) {
                     let t = (x / width) * 2 * Math.PI;
                     let y1 = midY - Math.sin(f1 * t) * amp;
                     let y2 = midY - Math.sin(f2 * t) * amp;
-                    
+
                     path1 += `L ${x} ${y1} `;
                     path2 += `L ${x} ${y2} `;
 
@@ -729,7 +695,7 @@
                         }
                     }
                 }
-                
+
                 svg.innerHTML = `
                     <line x1="0" y1="${midY}" x2="${width}" y2="${midY}" stroke="#475569" stroke-width="1" stroke-dasharray="4 4" />
                     <path d="${path1}" stroke="${color1}" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
@@ -738,8 +704,8 @@
                 `;
             }
 
-            drawWave('svg-octava', 1, 2, '#10b981', '#facc15'); 
-            drawWave('svg-quinta', 2, 3, '#10b981', '#38bdf8'); 
+            drawWave('svg-octava', 1, 2, '#10b981', '#facc15');
+            drawWave('svg-quinta', 2, 3, '#10b981', '#38bdf8');
             drawWave('svg-cuarta', 3, 4, '#10b981', '#f87171');
 
             // --- Lógica de la Presentación ---
@@ -748,7 +714,7 @@
             const btnNext = document.getElementById('btn-next');
             const counter = document.getElementById('slide-counter');
             const progressBar = document.getElementById('progress-bar');
-            
+
             let currentSlide = 0;
             const totalSlides = slides.length;
 
@@ -802,38 +768,14 @@
                 }
 
                 if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'Enter') {
-                    if(e.key === 'Space' && e.target.closest('.slide')) return; 
+                    if(e.key === 'Space' && e.target.closest('.slide')) return;
                     if(!inQuizMode || e.key === 'ArrowRight') window.nextSlide();
                 } else if (e.key === 'ArrowLeft') {
                     prevSlide();
                 }
             });
 
-            // Swipe
-            let touchStartX = 0;
-            let touchStartY = 0;
-
-            document.addEventListener('touchstart', e => {
-                touchStartX = e.changedTouches[0].screenX;
-                touchStartY = e.changedTouches[0].screenY;
-            }, {passive: true});
-
-            document.addEventListener('touchend', e => {
-                let touchEndX = e.changedTouches[0].screenX;
-                let touchEndY = e.changedTouches[0].screenY;
-                
-                let xDiff = touchEndX - touchStartX;
-                let yDiff = touchEndY - touchStartY;
-                
-                if (Math.abs(xDiff) > Math.abs(yDiff) && !e.target.closest('.quiz-option')) {
-                    const swipeThreshold = 50;
-                    if (xDiff < -swipeThreshold) {
-                        window.nextSlide();
-                    } else if (xDiff > swipeThreshold) {
-                        prevSlide();
-                    }
-                }
-            }, {passive: true});
+            // Swipe desactivado
 
 
             // --- Lógica del Cuestionario ---
@@ -942,13 +884,13 @@
             const btnQuizNext = document.getElementById('btn-quiz-next');
             const quizProgress = document.getElementById('quiz-progress');
             const quizControls = document.getElementById('quiz-controls');
-            
+
             let currentQuestionIndex = 0;
             let userAnswers = new Array(quizData.questions.length).fill(null);
 
             function showQuizResults() {
                 isShowingResults = true;
-                
+
                 let correctCount = 0;
                 userAnswers.forEach((ansIdx, qIdx) => {
                     if (ansIdx !== null && quizData.questions[qIdx].answerOptions[ansIdx].isCorrect) {
@@ -973,17 +915,17 @@
                         </div>
                         <h3 class="text-2xl md:text-3xl font-bold text-white mb-4">Cuestionario Finalizado</h3>
                         <p class="text-lg md:text-xl text-slate-300 mb-6">Respondiste correctamente <strong class="text-physics text-2xl mx-1">${correctCount}</strong> de <strong class="text-white text-2xl mx-1">${total}</strong> preguntas.</p>
-                        
+
                         <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700 mb-8 max-w-md w-full shadow-inner">
                             <p class="text-sm md:text-base text-slate-300 italic">"${feedbackMsg}"</p>
                         </div>
-                        
+
                         <button id="btn-go-conclusion" class="px-6 py-3 bg-physics hover:bg-emerald-600 text-white rounded-xl transition-all shadow-lg hover:scale-105 active:scale-95 text-base md:text-lg font-bold flex items-center">
                             Ver Conclusión <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
                         </button>
                     </div>
                 `;
-                
+
                 lucide.createIcons();
                 document.getElementById('btn-go-conclusion').addEventListener('click', () => {
                     isShowingResults = false;
@@ -993,9 +935,9 @@
 
             function renderQuestion() {
                 const q = quizData.questions[currentQuestionIndex];
-                
+
                 let questionText = q.question.replace(/\$(.*?)\$/g, '<span class="text-emerald-400 font-mono italic px-1">\\($1\\)</span>');
-                
+
                 let html = `
                     <div class="mb-6 fade-in">
                         <h3 class="text-xl md:text-2xl text-slate-200 font-medium mb-6 leading-relaxed">${questionText}</h3>
@@ -1004,14 +946,14 @@
 
                 q.answerOptions.forEach((opt, index) => {
                     let optText = opt.text.replace(/\$(.*?)\$/g, '<span class="text-emerald-400 font-mono italic px-1">\\($1\\)</span>');
-                    
+
                     let stateClass = 'bg-slate-800/80 text-slate-300';
                     let iconHtml = '<div class="w-5 h-5 rounded-full border-2 border-slate-600 mr-4 shrink-0 flex items-center justify-center"></div>';
                     let rationaleHtml = '';
 
                     if (userAnswers[currentQuestionIndex] !== null) {
                         const isSelected = userAnswers[currentQuestionIndex] === index;
-                        
+
                         if (opt.isCorrect) {
                             stateClass = 'correct text-emerald-100';
                             iconHtml = '<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 mr-4 shrink-0"></i>';
@@ -1049,7 +991,7 @@
 
                 html += `</div></div>`;
                 quizContainer.innerHTML = html;
-                
+
                 lucide.createIcons();
                 MathJax.typesetPromise([quizContainer]);
 
@@ -1064,7 +1006,7 @@
 
                 quizProgress.textContent = `Pregunta ${currentQuestionIndex + 1} de ${quizData.questions.length}`;
                 btnQuizPrev.disabled = currentQuestionIndex === 0;
-                
+
                 if (currentQuestionIndex === quizData.questions.length - 1) {
                     btnQuizNext.innerHTML = 'Finalizar <i data-lucide="flag" class="w-4 h-4 ml-2"></i>';
                 } else {
@@ -1074,7 +1016,7 @@
 
             function handleAnswer(selectedIndex) {
                 userAnswers[currentQuestionIndex] = selectedIndex;
-                renderQuestion(); 
+                renderQuestion();
             }
 
             btnQuizNext.addEventListener('click', () => {
